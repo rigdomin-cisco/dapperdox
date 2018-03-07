@@ -188,6 +188,7 @@ type Resource struct {
 	Methods               map[string]*Method
 	Enum                  []string
 	origin                ResourceOrigin
+	IsArray               bool
 }
 
 type Header struct {
@@ -1124,11 +1125,13 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 		id = ""
 	}
 
+	var is_array bool
 	if strings.ToLower(s.Type[0]) == "array" {
 		fqNSlen := len(fqNS)
 		if fqNSlen > 0 {
 			fqNS = append(fqNS[0:fqNSlen-1], fqNS[fqNSlen-1]+"[]")
 		}
+		//is_array = true
 	}
 
 	myFQNS := fqNS
@@ -1161,6 +1164,10 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 	}
 
 	logger.Tracef(nil, "Create resource %s\n", id)
+	if is_array {
+		logger.Tracef(nil, "- Is Array %s\n", s.Title)
+	}
+
 	r := &Resource{
 		ID:          id,
 		Title:       s.Title,
@@ -1168,6 +1175,7 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 		Type:        s.Type,
 		Properties:  make(map[string]*Resource),
 		FQNS:        resourceFQNS,
+		IsArray:     is_array,
 	}
 
 	if s.Example != nil {
