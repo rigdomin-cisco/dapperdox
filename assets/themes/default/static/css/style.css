@@ -229,6 +229,8 @@ h1,
 /* Sidebar navigation */
 .nav-sidebar {
  width: 100%;
+ overflow-y: auto;
+ height: calc(97vh - 90px);
 }
 .nav-sidebar > li > a {
 	padding: 0.3em;
