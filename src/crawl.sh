@@ -1,3 +1,8 @@
+echo $PWD | grep src$ && { 
+    echo "Cannot run crawl in src directory!"
+    exit 1
+}
+
 # Crawl site
 wget --recursive --no-host-directories http://localhost:3100/index.html -o src/wget.log
 
