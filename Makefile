@@ -12,7 +12,7 @@ WIN_LIST=${ZIPLIST} run_example.bat
 BZW=./buildzip $@ dapperdox.exe $+
 BZU=./buildzip $@ dapperdox     $+
 
-VERSION=1.1.1
+VERSION=1.2.0
 STEM=dist/dapperdox-${VERSION}
 
 all:
