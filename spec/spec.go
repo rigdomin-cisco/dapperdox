@@ -781,7 +781,7 @@ func (c *APISpecification) buildResponse(resp *spec.Response, method *Method, ve
 			r, example_json := c.resourceFromSchema(resp.Schema, method, nil, false)
 
 			if r != nil {
-				r.Schema = jsonResourceToString(example_json, r.Type[0])
+				r.Schema = jsonResourceToString(example_json, "")
 				r.origin = MethodResponse
 				vres = c.crossLinkMethodAndResource(r, method, version)
 			}
@@ -1131,7 +1131,7 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 		if fqNSlen > 0 {
 			fqNS = append(fqNS[0:fqNSlen-1], fqNS[fqNSlen-1]+"[]")
 		}
-		//is_array = true
+		is_array = true
 	}
 
 	myFQNS := fqNS
@@ -1163,9 +1163,9 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 		description = original_s.Title
 	}
 
-	logger.Tracef(nil, "Create resource %s\n", id)
+	logger.Tracef(nil, "Create resource %s [%s]\n", id, s.Title)
 	if is_array {
-		logger.Tracef(nil, "- Is Array %s\n", s.Title)
+		logger.Tracef(nil, "- Is Arrays\n")
 	}
 
 	r := &Resource{
