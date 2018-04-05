@@ -42,8 +42,7 @@ import (
 	"github.com/justinas/nosurf"
 )
 
-const VERSION string = "1.2.0" // TODO build with doxc to control version number?
-
+var VERSION string = "1.2.1"
 var tlsEnabled bool
 
 // ---------------------------------------------------------------------------

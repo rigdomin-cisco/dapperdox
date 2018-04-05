@@ -9,15 +9,18 @@ assets
 UNIX_LIST=${ZIPLIST} run_example.sh
 WIN_LIST=${ZIPLIST} run_example.bat
 
+VERSION=$(shell git rev-parse --abbrev-ref HEAD 2> /dev/null | sed s/release.v//)
+
 BZW=./buildzip $@ dapperdox.exe $+
 BZU=./buildzip $@ dapperdox     $+
 
-VERSION=1.2.0
 STEM=dist/dapperdox-${VERSION}
 
+#LDFLAGS=-ldflags "-X main.VERSION=${VERSION}"
+
 all:
-	@echo "Build DapperDox..."; \
-	go get && go build
+	@echo "Build DapperDox..."; 
+	go get && go build ${LDFLAGS}
 
 release: distribution \
 	${STEM}.linux-x86.tgz \
@@ -61,22 +64,22 @@ ${STEM}.windows-amd64.zip: dapperdox_win_amd64.exe ${WIN_LIST}
 	@${BZW}
 	
 dapperdox_linux_x86.exe: main.go
-	GOOS=linux GOARCH=386 go build -o $@
+	GOOS=linux GOARCH=386 go build ${LDFLAGS} -o $@
 
 dapperdox_linux_amd64.exe: main.go
-	GOOS=linux GOARCH=amd64 go build -o $@
+	GOOS=linux GOARCH=amd64 go build ${LDFLAGS} -o $@
 
 dapperdox_linux_arm64.exe: main.go
-	GOOS=linux GOARCH=arm64 go build -o $@
+	GOOS=linux GOARCH=arm64 go build ${LDFLAGS} -o $@
 
 dapperdox_linux_arm.exe: main.go
-	GOOS=linux GOARCH=arm go build -o $@
+	GOOS=linux GOARCH=arm go build ${LDFLAGS} -o $@
 
 dapperdox_darwin_amd64.exe: main.go
-	GOOS=darwin GOARCH=amd64 go build -o $@
+	GOOS=darwin GOARCH=amd64 go build ${LDFLAGS} -o $@
 
 dapperdox_win_x86.exe: main.go
-	GOOS=windows GOARCH=386 go build -o $@
+	GOOS=windows GOARCH=386 go build ${LDFLAGS} -o $@
 
 dapperdox_win_amd64.exe: main.go
-	GOOS=windows GOARCH=amd64 go build -o $@
+	GOOS=windows GOARCH=amd64 go build ${LDFLAGS} -o $@

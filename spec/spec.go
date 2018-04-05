@@ -155,6 +155,7 @@ type Parameter struct {
 	Type                        []string
 	Enum                        []string
 	Resource                    *Resource // For "in body" parameters
+	IsArray                     bool      // "in body" parameter is an array
 }
 
 // Response represents an API method response
@@ -163,6 +164,7 @@ type Response struct {
 	StatusDescription string
 	Resource          *Resource
 	Headers           []Header
+	IsArray           bool
 }
 
 type ResourceOrigin int
@@ -719,8 +721,8 @@ func (c *APISpecification) processMethod(api *APIGroup, pathItem *spec.PathItem,
 				os.Exit(1)
 			}
 			var body map[string]interface{}
-			p.Resource, body = c.resourceFromSchema(param.Schema, method, nil, true)
-			p.Resource.Schema = jsonResourceToString(body, "")
+			p.Resource, body, p.IsArray = c.resourceFromSchema(param.Schema, method, nil, true)
+			p.Resource.Schema = jsonResourceToString(body, p.IsArray)
 			p.Resource.origin = RequestBody
 			method.BodyParam = &p
 			c.crossLinkMethodAndResource(p.Resource, method, version)
@@ -776,11 +778,15 @@ func (c *APISpecification) buildResponse(resp *spec.Response, method *Method, ve
 
 	if resp != nil {
 		var vres *Resource
+		var r *Resource
+		var is_array bool
+		var example_json map[string]interface{}
+
 		if resp.Schema != nil {
-			r, example_json := c.resourceFromSchema(resp.Schema, method, nil, false)
+			r, example_json, is_array = c.resourceFromSchema(resp.Schema, method, nil, false)
 
 			if r != nil {
-				r.Schema = jsonResourceToString(example_json, r.Type[0])
+				r.Schema = jsonResourceToString(example_json, false)
 				r.origin = MethodResponse
 				vres = c.crossLinkMethodAndResource(r, method, version)
 			}
@@ -788,6 +794,7 @@ func (c *APISpecification) buildResponse(resp *spec.Response, method *Method, ve
 		response = &Response{
 			Description: string(github_flavored_markdown.Markdown([]byte(resp.Description))),
 			Resource:    vres,
+			IsArray:     is_array,
 		}
 		method.Resources = append(method.Resources, response.Resource) // Add the resource to the method which uses it
 
@@ -971,11 +978,11 @@ func (c *APISpecification) processSecurity(s []map[string][]string, security map
 
 // -----------------------------------------------------------------------------
 
-func jsonResourceToString(jsonres map[string]interface{}, restype string) string {
+func jsonResourceToString(jsonres map[string]interface{}, is_array bool) string {
 
 	// If the resource is an array, then append json object to outer array, else serialise the object.
 	var example []byte
-	if strings.ToLower(restype) == "array" {
+	if is_array {
 		var array_obj []map[string]interface{}
 		array_obj = append(array_obj, jsonres)
 		example, _ = JSONMarshalIndent(array_obj)
@@ -1043,9 +1050,9 @@ func checkPropertyType(s *spec.Schema) string {
 
 // -----------------------------------------------------------------------------
 
-func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fqNS []string, isRequestResource bool) (*Resource, map[string]interface{}) {
+func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fqNS []string, isRequestResource bool) (*Resource, map[string]interface{}, bool) {
 	if s == nil {
-		return nil, nil
+		return nil, nil, false
 	}
 
 	stype := checkPropertyType(s)
@@ -1124,11 +1131,13 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 		id = ""
 	}
 
+	var is_array bool
 	if strings.ToLower(s.Type[0]) == "array" {
 		fqNSlen := len(fqNS)
 		if fqNSlen > 0 {
 			fqNS = append(fqNS[0:fqNSlen-1], fqNS[fqNSlen-1]+"[]")
 		}
+		is_array = true
 	}
 
 	myFQNS := fqNS
@@ -1160,7 +1169,11 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 		description = original_s.Title
 	}
 
-	logger.Tracef(nil, "Create resource %s\n", id)
+	logger.Tracef(nil, "Create resource %s [%s]\n", id, s.Title)
+	if is_array {
+		logger.Tracef(nil, "- Is Arrays\n")
+	}
+
 	r := &Resource{
 		ID:          id,
 		Title:       s.Title,
@@ -1207,7 +1220,7 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 
 	logger.Tracef(nil, "resourceFromSchema done\n")
 
-	return r, json_representation
+	return r, json_representation, is_array
 }
 
 // -----------------------------------------------------------------------------
@@ -1247,7 +1260,7 @@ func (c *APISpecification) processProperty(s *spec.Schema, name string, r *Resou
 	var resource *Resource
 
 	logger.Tracef(nil, "A call resourceFromSchema for property %s\n", name)
-	resource, json_resource = c.resourceFromSchema(s, method, newFQNS, isRequestResource)
+	resource, json_resource, _ = c.resourceFromSchema(s, method, newFQNS, isRequestResource)
 
 	skip := isRequestResource && resource.ReadOnly
 	if !skip && resource.ExcludeFromOperations != nil {

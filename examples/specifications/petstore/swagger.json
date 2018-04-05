@@ -52,6 +52,12 @@
                     "required": true,
                     "schema": {
                         "$ref": "#/definitions/Pet"
+                    },
+                    "x-schema": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/Pet"
+                        }
                     }
                 }],
                 "responses": {
