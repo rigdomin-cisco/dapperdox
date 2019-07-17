@@ -14,24 +14,32 @@
 (line 23) need to expand this if URL matches page -->
 
 
+### ``formatter/markdown.go``
+(line 58) : Factor out the CSS for just headings.
+
+(line 135) : Clean up and improve this code.
+
+(line 270) : Still not completely filtered out.
+
+
 ### ``handlers/reference/reference.go``
-(line 182) default to latest if version not found, or 404 ?
+(line 180) default to latest if version not found, or 404 ?
 
 
-### ``main.go``
-(line 111) - Static content should be capable of being CDN hosted
+### ``handlers/router.go``
+(line 33) (kenjones): replace github.com/gorilla/pat with github.com/gorilla/mux
 
 
 ### ``render/asset/asset.go``
-(line 121) this should be applied to files also.
+(line 120) this should be applied to files also.
 
-(line 239) Make this more efficient!
+(line 234) Make this more efficient!
 
 
 ### ``render/render.go``
-(line 150) Will be specification specific
+(line 153) Will be specification specific
 
 
 ### ``spec/spec.go``
-(line 707) - Dies if there are no responses...
+(line 659) - Dies if there are no responses...
 

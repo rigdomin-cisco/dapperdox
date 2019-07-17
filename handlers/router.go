@@ -30,6 +30,7 @@ import (
 
 // NewRouterChain creates a router with a chain of middlewares that acts as an http.Handler
 func NewRouterChain() http.Handler {
+	// TODO(kenjones): replace github.com/gorilla/pat with github.com/gorilla/mux
 	router := pat.New()
 	chain := alice.New(withLogger, timeoutHandler, withCsrf, injectHeaders).Then(router)
 
