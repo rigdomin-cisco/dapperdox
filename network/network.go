@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2016-2017 dapperdox.com 
+Copyright (C) 2016-2017 dapperdox.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,45 +15,32 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
+
+// Package network creates connections with or without TLS.
 package network
 
 import (
 	"crypto/tls"
-	"errors"
-	"github.com/dapperdox/dapperdox/config"
-	"github.com/dapperdox/dapperdox/logger"
 	"net"
+
+	"github.com/spf13/viper"
+
+	"github.com/kenjones-cisco/dapperdox/config"
 )
 
-func GetListener(tlsEnabled *bool) (net.Listener, error) {
+// NewListener creates a new network Listener
+func NewListener() (net.Listener, error) {
+	log().Infof("listening on %s for unsecured connections", viper.GetString(config.BindAddr))
+	return net.Listen("tcp", viper.GetString(config.BindAddr))
+}
 
-	cfg, _ := config.Get() // Don't worry about error. If there was something wrong with the config, we'd know by now.
-
-	useTLS := 0
-	if len(cfg.TLSCertificate) > 0 {
-		useTLS++
-	}
-	if len(cfg.TLSKey) > 0 {
-		useTLS++
-	}
-
-	// If no cert & key, then we're to run in plain-text mode
-	if useTLS == 0 {
-		logger.Infof(nil, "listening on %s for unsecured connections", cfg.BindAddr)
-		return net.Listen("tcp", cfg.BindAddr)
-	}
-
-	if useTLS == 1 {
-		return nil, errors.New("You must provide both a certificate and a key to enable TLS")
-	}
-
-	// Okay, we're building a TLS listener
-	crt, err := tls.LoadX509KeyPair(cfg.TLSCertificate, cfg.TLSKey)
+// NewSecuredListener creates a secure network Listener
+func NewSecuredListener() (net.Listener, error) {
+	crt, err := tls.LoadX509KeyPair(viper.GetString(config.TLSCert), viper.GetString(config.TLSKey))
 	if err != nil {
 		return nil, err
 	}
 
-	// Be really secure!
 	tlscfg := &tls.Config{
 		MinVersion:               tls.VersionTLS12,
 		CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
@@ -67,7 +54,6 @@ func GetListener(tlsEnabled *bool) (net.Listener, error) {
 		Certificates: []tls.Certificate{crt},
 	}
 
-	logger.Infof(nil, "listening on %s for SECURED connections", cfg.BindAddr)
-	*tlsEnabled = true
-	return tls.Listen("tcp", cfg.BindAddr, tlscfg)
+	log().Infof("listening on %s for SECURED connections", viper.GetString(config.BindAddr))
+	return tls.Listen("tcp", viper.GetString(config.BindAddr), tlscfg)
 }

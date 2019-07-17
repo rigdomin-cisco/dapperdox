@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2016-2017 dapperdox.com 
+Copyright (C) 2016-2017 dapperdox.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,79 +15,72 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
+
+// Package home provides handler for homepage.
 package home
 
 import (
 	"net/http"
 
-	"github.com/dapperdox/dapperdox/config"
-	"github.com/dapperdox/dapperdox/logger"
-	"github.com/dapperdox/dapperdox/render"
-	"github.com/dapperdox/dapperdox/spec"
 	"github.com/gorilla/pat"
+	"github.com/spf13/viper"
+
+	"github.com/kenjones-cisco/dapperdox/config"
+	"github.com/kenjones-cisco/dapperdox/render"
+	"github.com/kenjones-cisco/dapperdox/spec"
 )
 
-// ----------------------------------------------------------------------------------------
 // Register creates routes for each home handler
 func Register(r *pat.Router) {
-	logger.Debugln(nil, "registering handlers for home page")
+	log().Debug("registering handlers for home page")
 
-	count := 0
 	// Homepages for each loaded specification
 	var specification *spec.APISpecification // Ends up being populated with the last spec processed
 
 	for _, specification = range spec.APISuite {
 
-		logger.Tracef(nil, "Build homepage route for specification '%s'", specification.ID)
+		log().Tracef("Build homepage route for specification %q", specification.ID)
 
-		r.Path("/" + specification.ID + "/reference").Methods("GET").HandlerFunc(specificationSummaryHandler(specification))
+		r.Path("/" + specification.ID + "/reference").Methods(http.MethodGet).HandlerFunc(specificationSummaryHandler(specification))
 
 		// If missingh trailing slash, redirect to add it
-		r.Path("/" + specification.ID).Methods("GET").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			http.Redirect(w, req, "/"+specification.ID+"/", 302)
+		r.Path("/" + specification.ID).Methods(http.MethodGet).HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			http.Redirect(w, req, "/"+specification.ID+"/", http.StatusFound)
 		})
-
-		count++
 	}
 
-	cfg, _ := config.Get()
-
-	if count == 1 && cfg.ForceSpecList == false {
+	if len(spec.APISuite) == 1 && !viper.GetBool(config.ForceSpecList) {
 		// If there is only one specification loaded, then hotwire '/' to redirect to the
 		// specification summary page unless DapperDox is configured to show the specification list page.
-		r.Path("/").Methods("GET").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			http.Redirect(w, req, "/"+specification.ID+"/reference", 302)
+		r.Path("/").Methods(http.MethodGet).HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			http.Redirect(w, req, "/"+specification.ID+"/reference", http.StatusFound)
 		})
 	} else {
-		r.Path("/").Methods("GET").HandlerFunc(specificationListHandler)
+		r.Path("/").Methods(http.MethodGet).HandlerFunc(specificationListHandler)
 	}
 }
 
-// ----------------------------------------------------------------------------------------
-// Handler is a http.Handler for the specification list page
 func specificationListHandler(w http.ResponseWriter, req *http.Request) {
-	logger.Tracef(nil, "Render HTML for top level index page")
+	log().Trace("Render HTML for top level index page")
 
-	render.HTML(w, http.StatusOK, "specification_list", render.DefaultVars(req, nil, render.Vars{"Title": "Specifications list", "SpecificationList": true}))
+	render.HTML(w, http.StatusOK, "specification_list",
+		render.DefaultVars(req, nil, render.Vars{"Title": "Specifications list", "SpecificationList": true}))
 }
 
-// ----------------------------------------------------------------------------------------
-func specificationSummaryHandler(specification *spec.APISpecification) func(w http.ResponseWriter, req *http.Request) {
+func specificationSummaryHandler(s *spec.APISpecification) func(w http.ResponseWriter, req *http.Request) {
 
 	// The default "theme" level reference index page.
 	tmpl := "specification_summary"
 
-	customTmpl := specification.ID + "/specification_summary"
+	customTmpl := s.ID + "/specification_summary"
 
-	logger.Tracef(nil, "+ Test for template '%s'", customTmpl)
+	log().Tracef("+ Test for template %q", customTmpl)
 
 	if render.TemplateLookup(customTmpl) != nil {
 		tmpl = customTmpl
 	}
 	return func(w http.ResponseWriter, req *http.Request) {
-		render.HTML(w, http.StatusOK, tmpl, render.DefaultVars(req, specification, render.Vars{"Title": "Specification summary", "SpecificationSummary": true}))
+		render.HTML(w, http.StatusOK, tmpl,
+			render.DefaultVars(req, s, render.Vars{"Title": "Specification summary", "SpecificationSummary": true}))
 	}
 }
-
-// ----------------------------------------------------------------------------------------
-// end

@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2016-2017 dapperdox.com 
+Copyright (C) 2016-2017 dapperdox.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,8 +26,6 @@ import (
 	"net/http"
 	"sync"
 	"time"
-
-	"github.com/dapperdox/dapperdox/logger"
 )
 
 // Handler returns a Handler that runs h with the given time limit.
@@ -37,17 +35,13 @@ import (
 // a 503 Service Unavailable error and the given message in its body.
 // (If msg is empty, a suitable default message will be sent.)
 // After such a timeout, writes by h to its ResponseWriter will return
-// ErrHandlerTimeout.
+// error.
 func Handler(h http.Handler, dt time.Duration, fh http.Handler) http.Handler {
 	f := func() <-chan time.Time {
 		return time.After(dt)
 	}
 	return &handler{h, f, fh}
 }
-
-// ErrHandlerTimeout is returned on ResponseWriter Write calls
-// in handlers which have timed out.
-var ErrHandlerTimeout = errors.New("http: Handler timeout")
 
 type handler struct {
 	handler     http.Handler
@@ -68,9 +62,9 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case <-h.timeout():
 		tw.mu.Lock()
 		defer tw.mu.Unlock()
-		logger.Traceln(r, "request timed out")
+		log().Trace("request timed out")
 		if !tw.wroteHeader {
-			logger.Traceln(r, "headers not written, calling failure handler")
+			log().Trace("headers not written, calling failure handler")
 			h.failHandler.ServeHTTP(w, r)
 		}
 		tw.timedOut = true
@@ -94,7 +88,7 @@ func (tw *writer) Write(p []byte) (int, error) {
 	defer tw.mu.Unlock()
 	tw.wroteHeader = true // implicitly at least
 	if tw.timedOut {
-		return 0, ErrHandlerTimeout
+		return 0, errors.New("http: Handler timeout")
 	}
 	return tw.w.Write(p)
 }

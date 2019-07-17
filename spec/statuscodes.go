@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2016-2017 dapperdox.com 
+Copyright (C) 2016-2017 dapperdox.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,68 +15,72 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
+
+// Package spec provides API spec loading and parsing.
 package spec
 
 import (
 	"bufio"
-	"github.com/dapperdox/dapperdox/config"
-	"github.com/dapperdox/dapperdox/logger"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
+
+	"github.com/spf13/viper"
+
+	"github.com/kenjones-cisco/dapperdox/config"
 )
 
 var statusMapSplit = regexp.MustCompile(",")
-var StatusCodes map[int]string
+var statusCodes map[int]string
 
-func LoadStatusCodes() {
+// loadStatusCodes loads status code mappings
+func loadStatusCodes() {
 	var statusfile string
 
-	cfg, _ := config.Get()
-
-	if len(cfg.AssetsDir) != 0 {
-		statusfile = cfg.AssetsDir + "/status_codes.csv"
-		logger.Tracef(nil, "Looking in assets dir for %s\n", statusfile)
+	if viper.GetString(config.AssetsDir) != "" {
+		statusfile = filepath.Join(viper.GetString(config.AssetsDir), "status_codes.csv")
+		log().Tracef("Looking in assets dir for %s", statusfile)
 		if _, err := os.Stat(statusfile); os.IsNotExist(err) {
 			statusfile = ""
 		}
 	}
-	if len(statusfile) == 0 && len(cfg.ThemeDir) != 0 {
-		statusfile = cfg.ThemeDir + "/" + cfg.Theme + "/status_codes.csv"
-		logger.Tracef(nil, "Looking in theme dir for %s\n", statusfile)
+	if statusfile == "" && viper.GetString(config.ThemeDir) != "" {
+		statusfile = filepath.Join(viper.GetString(config.ThemeDir), viper.GetString(config.Theme), "status_codes.csv")
+		log().Tracef("Looking in theme dir for %s", statusfile)
 		if _, err := os.Stat(statusfile); os.IsNotExist(err) {
 			statusfile = ""
 		}
 	}
-	if len(statusfile) == 0 {
-		statusfile = cfg.DefaultAssetsDir + "/themes/" + cfg.Theme + "/status_codes.csv"
-		logger.Tracef(nil, "Looking in default theme dir for %s\n", statusfile)
+	if statusfile == "" {
+		statusfile = filepath.Join(viper.GetString(config.DefaultAssetsDir), "themes", viper.GetString(config.Theme), "status_codes.csv")
+		log().Tracef("Looking in default theme dir for %s", statusfile)
 		if _, err := os.Stat(statusfile); os.IsNotExist(err) {
 			statusfile = ""
 		}
 	}
-	if len(statusfile) == 0 {
-		statusfile = cfg.DefaultAssetsDir + "/themes/default/status_codes.csv"
-		logger.Tracef(nil, "Looking in default theme %s\n", statusfile)
+	if statusfile == "" {
+		statusfile = filepath.Join(viper.GetString(config.DefaultAssetsDir), "themes", "default", "status_codes.csv")
+		log().Tracef("Looking in default theme %s", statusfile)
 		if _, err := os.Stat(statusfile); os.IsNotExist(err) {
 			statusfile = ""
 		}
 	}
 
-	if len(statusfile) == 0 {
-		logger.Tracef(nil, "No status code map file found.")
+	if statusfile == "" {
+		log().Trace("No status code map file found.")
 		return
 	}
-	logger.Tracef(nil, "Processing HTTP status code file: %s\n", statusfile)
-	file, err := os.Open(statusfile)
+	log().Tracef("Processing HTTP status code file: %s", statusfile)
 
+	file, err := os.Open(statusfile)
 	if err != nil {
-		logger.Errorf(nil, "Error: %s", err)
+		log().Errorf("Error: %s", err)
 		return
 	}
 	defer file.Close()
 
-	StatusCodes = make(map[int]string)
+	statusCodes = make(map[int]string)
 
 	scanner := bufio.NewScanner(file)
 
@@ -89,23 +93,17 @@ func LoadStatusCodes() {
 		}
 		i, err := strconv.Atoi(line[0 : indexes[1]-1])
 		if err != nil {
-			logger.Errorf(nil, "Invalid HTTP status code in csv file: '%s'\n", line)
+			log().Errorf("Invalid HTTP status code in csv file: %q", line)
 			continue
 		}
-		status := i
-		desc := line[indexes[1]:]
-
-		StatusCodes[status] = string(desc)
+		statusCodes[i] = line[indexes[1]:]
 	}
 
 	if err := scanner.Err(); err != nil {
-		logger.Errorf(nil, "Error: %s", err)
+		log().Errorf("Error: %s", err)
 	}
 }
 
-func HTTPStatusDescription(status int) string {
-	if desc, ok := StatusCodes[status]; ok {
-		return desc
-	}
-	return ""
+func httpStatusDescription(status int) string {
+	return statusCodes[status]
 }

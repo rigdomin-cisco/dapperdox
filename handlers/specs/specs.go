@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2016-2017 dapperdox.com 
+Copyright (C) 2016-2017 dapperdox.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
+
+// Package specs provides handler for API specs.
 package specs
 
 import (
@@ -24,9 +26,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/dapperdox/dapperdox/config"
-	"github.com/dapperdox/dapperdox/logger"
 	"github.com/gorilla/pat"
+	"github.com/spf13/viper"
+
+	"github.com/kenjones-cisco/dapperdox/config"
 )
 
 var specMap map[string][]byte
@@ -35,15 +38,10 @@ var specReplacer *strings.Replacer
 // Register creates routes for each static resource
 func Register(r *pat.Router) {
 
-	cfg, err := config.Get()
-	if err != nil {
-		logger.Errorf(nil, "error configuring app: %s", err)
-	}
+	log().Info("Registering specifications")
 
-	logger.Infof(nil, "Registering specifications")
-
-	if cfg.SpecDir == "" {
-		logger.Infof(nil, "- No local specifications to serve")
+	if viper.GetString(config.SpecDir) == "" {
+		log().Info("- No local specifications to serve")
 		return
 	}
 
@@ -52,72 +50,66 @@ func Register(r *pat.Router) {
 		var replacements []string
 
 		// Configure the replacer with key=value pairs
-		for i := range cfg.SpecRewriteURL {
-
-			slice := strings.Split(cfg.SpecRewriteURL[i], "=")
-
-			switch len(slice) {
-			case 1: // Map between configured URL and site URL
-				replacements = append(replacements, slice[0], cfg.SiteURL)
-			case 2: // Map between configured to=from URL pair
-				replacements = append(replacements, slice...)
-			default:
-				panic("Invalid DocumentWriteUrl - does not contain an = delimited from=to pair")
+		for k, v := range viper.GetStringMapString(config.SpecRewriteURL) {
+			if v != "" {
+				// Map between configured to=from URL pair
+				replacements = append(replacements, k, v)
+			} else {
+				// Map between configured URL and site URL
+				replacements = append(replacements, k, viper.GetString(config.SiteURL))
 			}
 		}
 		specReplacer = strings.NewReplacer(replacements...)
 	}
 
-	base, err := filepath.Abs(filepath.Clean(cfg.SpecDir))
+	base, err := filepath.Abs(filepath.Clean(viper.GetString(config.SpecDir)))
 	if err != nil {
-		logger.Errorf(nil, "Error forming specification path: %s", err)
+		log().Errorf("Error forming specification path: %s", err)
 	}
 
-	logger.Debugf(nil, "- Scanning base directory %s", base)
+	log().Debugf("- Scanning base directory %s", base)
 
 	base = filepath.ToSlash(base)
 
 	specMap = make(map[string][]byte)
 
-	err = filepath.Walk(base, func(path string, _ os.FileInfo, _ error) error {
+	_ = filepath.Walk(base, func(path string, _ os.FileInfo, _ error) error {
 
 		if path == base {
 			// Nothing to do with this path
 			return nil
 		}
 
-		logger.Debugf(nil, "  - %s", path)
+		log().Debugf("  - %s", path)
 
 		path = filepath.ToSlash(path)
 		ext := filepath.Ext(path)
 
 		switch ext {
-		case ".json", ".yaml":
+		case ".json", ".yml", ".yaml":
 			// Strip base path and file extension
 			route := strings.TrimPrefix(path, base)
 
-			logger.Debugf(nil, "    = URL : %s", route)
-			logger.Tracef(nil, "    + File: %s", path)
+			log().Debugf("    = URL : %s", route)
+			log().Tracef("    + File: %s", path)
 
 			specMap[route], _ = ioutil.ReadFile(path)
 
 			// Replace URLs in document
 			specMap[route] = []byte(specReplacer.Replace(string(specMap[route])))
 
-			r.Path(route).Methods("GET").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			r.Path(route).Methods(http.MethodGet).HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				serveSpec(w, route)
 			})
 		}
 		return nil
 	})
-	_ = err
 }
 
 func serveSpec(w http.ResponseWriter, resource string) {
-	logger.Tracef(nil, "Serve file "+resource)
+	log().Debugf("Serve file %s", resource)
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-control", "public, max-age=259200")
-	w.WriteHeader(200)
-	w.Write(specMap[resource])
-	return
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(specMap[resource])
 }

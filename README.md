@@ -44,13 +44,25 @@ Start up DapperDox, pointing it to your OpenAPI 2.0 specification file:
 DapperDox looks for the file `swagger.json` at the `-spec-dir` location, and builds reference documentation for the OpenAPI specification it finds. For example, the obligatory *petstore* OpenAPI specification is provided in the `examples/specifications/petstore` directory, so
 passing parameter `-spec-dir=examples/specifications/petstore` will build the petstore documentation.
 
-DapperDox will default to serving documentation from port 3123 on all interfaces, so you can point your 
+DapperDox will default to serving documentation from port 3123 on all interfaces, so you can point your
 web browser at http://127.0.0.1:3123 or http://localhost:3123.
 
 For an out-of-the-box example, execute the example run script:
 
 ```bash
-./run_example.sh
+./dapperdox \
+  -spec-dir=examples/specifications/petstore/ \
+  -bind-addr=0.0.0.0:3123 \
+  -site-url=http://localhost:3123 \
+  -spec-rewrite-url=petstore.swagger.io=PETSTORE.swagger.io \
+  -log-level=trace \
+  -force-specification-list=false \
+  -theme=default  \
+  -tls-certificate=server.rsa.crt \
+  -tls-key=server.rsa.key \
+  -author-show-assets=true \
+  -assets-dir=./examples/overlay/assets \
+  -proxy-path=/developer=https://developer.some-dev-site.com
 ```
 
 This demonstrates many of the configuration options available. See [configuration](http://dapperdox.io/docs/configuration-guide).

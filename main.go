@@ -18,141 +18,56 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
-	"log"
+	"fmt"
 	"net"
 	"net/http"
 	"os"
-	"sync"
-	"time"
 
-	"github.com/dapperdox/dapperdox/config"
-	"github.com/dapperdox/dapperdox/handlers/guides"
-	"github.com/dapperdox/dapperdox/handlers/home"
-	"github.com/dapperdox/dapperdox/handlers/reference"
-	"github.com/dapperdox/dapperdox/handlers/specs"
-	"github.com/dapperdox/dapperdox/handlers/static"
-	"github.com/dapperdox/dapperdox/handlers/timeout"
-	"github.com/dapperdox/dapperdox/logger"
-	"github.com/dapperdox/dapperdox/network"
-	"github.com/dapperdox/dapperdox/proxy"
-	"github.com/dapperdox/dapperdox/render"
-	"github.com/dapperdox/dapperdox/spec"
-	"github.com/gorilla/pat"
-	"github.com/justinas/alice"
-	"github.com/justinas/nosurf"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
+
+	"github.com/kenjones-cisco/dapperdox/config"
+	"github.com/kenjones-cisco/dapperdox/handlers"
+	log "github.com/kenjones-cisco/dapperdox/logger"
+	"github.com/kenjones-cisco/dapperdox/network"
+	"github.com/kenjones-cisco/dapperdox/version"
 )
 
-var VERSION string = "1.2.1"
-var tlsEnabled bool
-
-// ---------------------------------------------------------------------------
 func main() {
-	tlsEnabled = false
-	log.Printf("DapperDox server version %s starting\n", VERSION)
+	pflag.Usage = func() {
+		_, _ = fmt.Fprint(os.Stderr, "Usage:\n")
+		_, _ = fmt.Fprintf(os.Stderr, "  %s [OPTIONS]\n\n", version.ShortName)
+		_, _ = fmt.Fprintf(os.Stderr, "%s\n\n", version.ProductName)
+		_, _ = fmt.Fprintln(os.Stderr, pflag.CommandLine.FlagUsages())
+	}
+	// parse the CLI flags
+	pflag.Parse()
+	_ = viper.BindPFlags(pflag.CommandLine)
 
-	os.Setenv("GOFIGURE_ENV_ARRAY", "1") // Enable gofigure array parsing of env vars
-
-	cfg, err := config.Get()
-	if err != nil {
-		log.Fatalf("error configuring app: %s", err)
+	if viper.GetBool(config.Version) {
+		fmt.Print(version.GetVersionDisplay())
+		os.Exit(0)
 	}
 
-	// logging before this point must rely on setting LOGLEVEL env var
-	if l, err := logger.LevelFromString(cfg.LogLevel); err == nil {
-		logger.DefaultLevel = l
+	config.Init()
+
+	log.SetLevel(viper.GetString(config.LogLevel))
+
+	chain := handlers.NewRouterChain()
+
+	var listener net.Listener
+	var err error
+
+	if viper.GetString(config.TLSCert) != "" && viper.GetString(config.TLSKey) != "" {
+		listener, err = network.NewSecuredListener()
 	} else {
-		logger.Errorf(nil, "error setting log level: %s", err)
-		os.Exit(1)
+		listener, err = network.NewListener()
 	}
-
-	router := pat.New()
-	chain := alice.New(logger.Handler /*, context.ClearHandler*/, timeoutHandler, withCsrf, injectHeaders).Then(router)
-
-	logger.Infof(nil, "listening on %s", cfg.BindAddr)
-	listener, err := net.Listen("tcp", cfg.BindAddr)
 	if err != nil {
-		logger.Errorf(nil, "%s", err)
-		os.Exit(1)
+		log.Logger().Fatalf("Error listening on %s: %s", viper.GetString(config.BindAddr), err)
 	}
 
-	var wg sync.WaitGroup
-	var sg sync.WaitGroup
-	sg.Add(1)
-
-	go func() {
-		logger.Traceln(nil, "Listen for and serve swagger spec requests for start up")
-		wg.Add(1)
-		sg.Done()
-		http.Serve(listener, chain)
-		logger.Traceln(nil, "Finished service swagger specs for start up")
-		wg.Done()
-	}()
-
-	sg.Wait()
-
-	// Register the spec routes (Listener and server must be up and running by now)
-	specs.Register(router)
-	spec.LoadStatusCodes()
-
-	err = spec.LoadSpecifications(cfg.BindAddr, true)
-	if err != nil {
-		logger.Errorf(nil, "Load specification error: %s", err)
-		os.Exit(1)
+	if err = http.Serve(listener, chain); err != nil {
+		log.Logger().Fatalf("%v", err)
 	}
-
-	render.Register()
-
-	reference.Register(router)
-	guides.Register(router)
-	static.Register(router) // TODO - Static content should be capable of being CDN hosted
-
-	home.Register(router)
-	proxy.Register(router)
-
-	listener.Close() // Stop serving specs
-	wg.Wait()        // wait for go routine serving specs to terminate
-
-	listener, err = network.GetListener(&tlsEnabled)
-	if err != nil {
-		logger.Errorf(nil, "Error listening on %s: %s", cfg.BindAddr, err)
-		os.Exit(1)
-	}
-
-	http.Serve(listener, chain)
 }
-
-// ---------------------------------------------------------------------------
-func withCsrf(h http.Handler) http.Handler {
-	csrfHandler := nosurf.New(h)
-	csrfHandler.SetFailureHandler(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		rsn := nosurf.Reason(req).Error()
-		logger.Warnf(req, "failed csrf validation: %s", rsn)
-		render.HTML(w, http.StatusBadRequest, "error", map[string]interface{}{"error": rsn})
-	}))
-	return csrfHandler
-}
-
-// ---------------------------------------------------------------------------
-func timeoutHandler(h http.Handler) http.Handler {
-	return timeout.Handler(h, 1*time.Second, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		logger.Warnln(req, "request timed out")
-		render.HTML(w, http.StatusRequestTimeout, "error", map[string]interface{}{"error": "Request timed out"})
-	}))
-}
-
-// ---------------------------------------------------------------------------
-// Handle additional headers such as strict transport security for TLS, and
-// giving the Server name.
-func injectHeaders(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Server", "DapperDox "+VERSION)
-
-		if tlsEnabled {
-			w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
-		}
-
-		h.ServeHTTP(w, r)
-	})
-}
-
-// ---------------------------------------------------------------------------

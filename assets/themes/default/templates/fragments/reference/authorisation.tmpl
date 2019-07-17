@@ -1,7 +1,7 @@
 <p>This request requires the use of one of following authorisation methods:
 
 [: range $name, $security := . :]
-    [: if $security.Scheme.IsApiKey :]<code>API key</code>[: end :]
+    [: if $security.Scheme.IsAPIKey :]<code>API key</code>[: end :]
     [: if $security.Scheme.IsBasic :]<code>BASIC</code>[: end :]
     [: if $security.Scheme.IsOAuth2 :]<code>OAuth2</code>[: end :][: end :].</p>
 

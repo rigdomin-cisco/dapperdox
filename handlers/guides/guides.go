@@ -15,87 +15,83 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
+
+// Package guides provide handler for API Explorer/Guides.
 package guides
 
 import (
-	//"github.com/davecgh/go-spew/spew"
 	"net/http"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 
-	"github.com/dapperdox/dapperdox/logger"
-	"github.com/dapperdox/dapperdox/navigation"
-	"github.com/dapperdox/dapperdox/render"
-	"github.com/dapperdox/dapperdox/render/asset"
-	"github.com/dapperdox/dapperdox/spec"
 	"github.com/gorilla/pat"
+
+	"github.com/kenjones-cisco/dapperdox/navigation"
+	"github.com/kenjones-cisco/dapperdox/render"
+	"github.com/kenjones-cisco/dapperdox/render/asset"
+	"github.com/kenjones-cisco/dapperdox/spec"
 )
 
-// ---------------------------------------------------------------------------
 // Register routes for guide pages
 func Register(r *pat.Router) {
 
-	logger.Infof(nil, "Registering guides")
+	log().Info("Registering guides")
 
 	// specification specific guides
 	for _, specification := range spec.APISuite {
-		logger.Debugf(nil, "- Specification guides for '%s'", specification.APIInfo.Title)
+		log().Debugf("- Specification guides for %q", specification.APIInfo.Title)
 		register(r, "assets/templates", specification)
 	}
 
 	// Top level guides
-	logger.Debugf(nil, "- Root guides")
+	log().Debug("- Root guides")
 	register(r, "assets/templates", nil)
-
-	logger.Debugf(nil, "\n")
 }
 
-// ---------------------------------------------------------------------------
 func register(r *pat.Router, base string, specification *spec.APISpecification) {
 
-	root_node := "/guides"
-	route_base := "/guides"
+	rootNode := "/guides"
+	routeBase := "/guides"
 	if specification != nil {
-		root_node = "/" + specification.ID + "/templates" + root_node
-		route_base = "/" + specification.ID + route_base
+		rootNode = "/" + specification.ID + "/templates" + rootNode
+		routeBase = "/" + specification.ID + routeBase
 	}
 
-	path_base := base + root_node
+	pathBase := base + rootNode
 
-	guidesNavigation := &navigation.NavigationNode{}
+	guidesNavigation := &navigation.Node{}
 
-	guidesNavigation.Children = make([]*navigation.NavigationNode, 0)
-	guidesNavigation.ChildMap = make(map[string]*navigation.NavigationNode)
+	guidesNavigation.Children = make([]*navigation.Node, 0)
+	guidesNavigation.ChildMap = make(map[string]*navigation.Node)
 
-	logger.Tracef(nil, "  - Walk compiled asset tree %s", path_base)
+	log().Tracef("  - Walk compiled asset tree %s", pathBase)
 
-	for _, path := range asset.AssetNames() {
-		if !strings.HasPrefix(path, path_base) { // Only keep assets we want
+	for _, path := range asset.Names() {
+		if !strings.HasPrefix(path, pathBase) { // Only keep assets we want
 			continue
 		}
 		ext := filepath.Ext(path)
 
 		switch ext {
 		case ".tmpl", ".md":
-			logger.Debugf(nil, "    - File "+path)
+			log().Debugf("    - File %s", path)
 
 			// Convert path/filename to route
-			route := route_base + StripBasepathAndExtension(path, path_base)
-			absresource := StripBasepathAndExtension(path, base)
+			route := routeBase + stripBasepathAndExtension(path, pathBase)
+			absresource := stripBasepathAndExtension(path, base)
 			resource := strings.TrimPrefix(absresource, "/")
 
-			logger.Tracef(nil, "      = URL  "+route)
+			log().Tracef("      = URL  %s", route)
 
-			buildNavigation(guidesNavigation, path, path_base, route, ext)
+			buildNavigation(guidesNavigation, path, pathBase, route, ext)
 
-			r.Path(route).Methods("GET").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			r.Path(route).Methods(http.MethodGet).HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				sid := "TOP LEVEL"
 				if specification != nil {
 					sid = specification.ID
 				}
-				logger.Tracef(nil, "Fetching guide from '%s' for spec ID %s\n", resource, sid)
+				log().Tracef("Fetching guide from %q for spec ID %s", resource, sid)
 				render.HTML(w, http.StatusOK, resource, render.DefaultVars(req, specification, render.Vars{"Guide": resource}))
 			})
 		}
@@ -104,26 +100,24 @@ func register(r *pat.Router, base string, specification *spec.APISpecification) 
 	sortNavigation(guidesNavigation)
 
 	// Register default route for this guide set
-	r.Path(route_base).Methods("GET").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		uri := findFirstGuideUri(guidesNavigation)
-		logger.Infof(nil, "Redirect to %s\n", uri)
-		http.Redirect(w, req, uri, 302)
+	r.Path(routeBase).Methods(http.MethodGet).HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		uri := findFirstGuideURI(guidesNavigation)
+		log().Infof("Redirect to %s", uri)
+		http.Redirect(w, req, uri, http.StatusFound)
 	})
 
 	// Register the guides navigation with the renderer
-	render.SetGuidesNavigation(specification, &guidesNavigation.Children)
+	render.SetGuidesNavigation(specification, guidesNavigation.Children)
 }
 
-// ---------------------------------------------------------------------------
-
-func findFirstGuideUri(tree *navigation.NavigationNode) string {
+func findFirstGuideURI(tree *navigation.Node) string {
 	var uri string
 	for i := range tree.Children {
 		node := tree.Children[i]
-		uri = node.Uri
+		uri = node.URI
 		if uri == "" {
 			if len(node.Children) > 0 {
-				uri = findFirstGuideUri(node)
+				uri = findFirstGuideURI(node)
 			}
 		}
 		if uri != "" {
@@ -133,8 +127,7 @@ func findFirstGuideUri(tree *navigation.NavigationNode) string {
 	return uri
 }
 
-// ---------------------------------------------------------------------------
-func sortNavigation(tree *navigation.NavigationNode) {
+func sortNavigation(tree *navigation.Node) {
 
 	for i := range tree.Children {
 		node := tree.Children[i]
@@ -146,42 +139,25 @@ func sortNavigation(tree *navigation.NavigationNode) {
 	sort.Sort(navigation.ByOrder(tree.Children))
 }
 
-// ---------------------------------------------------------------------------
-func dumpit(tree *navigation.NavigationNode) {
-	for i := range tree.Children {
-		node := tree.Children[i]
-
-		logger.Tracef(nil, "Sorted name = %s\n", node.Name)
-		for j := range node.Children {
-			node2 := node.Children[j]
-			logger.Tracef(nil, "       name = %s\n", node2.Name)
-		}
-	}
-}
-
-// ---------------------------------------------------------------------------
-func StripBasepathAndExtension(name string, basepath string) string {
+func stripBasepathAndExtension(name, basepath string) string {
 	// Strip base path and file extension
-	route := strings.TrimSuffix(strings.TrimPrefix(name, basepath), filepath.Ext(name))
-
-	return route
+	return strings.TrimSuffix(strings.TrimPrefix(name, basepath), filepath.Ext(name))
 }
 
-// ---------------------------------------------------------------------------
-func buildNavigation(nav *navigation.NavigationNode, path string, path_base string, route string, ext string) {
+func buildNavigation(nav *navigation.Node, path, pathBase, route, ext string) {
 
-	logger.Tracef(nil, "      - Look for metadata asset %s\n", path)
+	log().Tracef("      - Look for metadata asset %s", path)
 
-	// See if guide has been marked up with nagivation metadata...
+	// See if guide has been marked up with navigation metadata...
 	hierarchy := asset.MetaData(path, "Navigation")
 	sortOrder := asset.MetaData(path, "SortOrder")
 
 	if len(hierarchy) > 0 {
-		logger.Tracef(nil, "      * Got navigation metadata %s for file %s\n", hierarchy, path)
+		log().Tracef("      * Got navigation metadata %s for file %s", hierarchy, path)
 	} else {
 		// No Meta Data set on guide, so use the directory structure
-		hierarchy = strings.TrimPrefix(strings.TrimSuffix(path, ext), path_base+"/")
-		logger.Tracef(nil, "      * No navigation metadata for "+hierarchy+". Using path")
+		hierarchy = strings.TrimPrefix(strings.TrimSuffix(path, ext), pathBase+"/")
+		log().Tracef("      * No navigation metadata for %s. Using path", hierarchy)
 	}
 
 	// Break hierarchy into bits
@@ -189,8 +165,7 @@ func buildNavigation(nav *navigation.NavigationNode, path string, path_base stri
 	parts := len(split)
 
 	if parts > 2 {
-		logger.Errorf(nil, "Error: Guide '"+hierarchy+"' contains too many nagivation levels (%d)", parts)
-		os.Exit(1)
+		log().Panicf("Error: Guide %q contains too many navigation levels (%d)", hierarchy, parts)
 	}
 
 	if sortOrder == "" {
@@ -204,27 +179,26 @@ func buildNavigation(nav *navigation.NavigationNode, path string, path_base stri
 	for i := range split {
 
 		name := split[i]
-		id := strings.Replace(strings.ToLower(name), " ", "-", -1)
-		id = strings.Replace(id, ".", "-", -1)
+		id := strings.ReplaceAll(strings.ToLower(name), " ", "-")
+		id = strings.ReplaceAll(id, ".", "-")
 
 		if i < parts-1 {
 			// Have we already created this branch node?
 			if currentItem, ok := current[id]; !ok {
 				// create new branch node
-				current[id] = &navigation.NavigationNode{
-					Id:        id,
+				current[id] = &navigation.Node{
+					ID:        id,
 					SortOrder: sortOrder,
 					Name:      name,
-					ChildMap:  make(map[string]*navigation.NavigationNode),
-					Children:  make([]*navigation.NavigationNode, 0),
+					ChildMap:  make(map[string]*navigation.Node),
+					Children:  make([]*navigation.Node, 0),
 				}
 				*currentList = append(*currentList, current[id])
-				logger.Tracef(nil, "      + Adding %s = %s to branch\n", id, current[id].Name)
-			} else {
+				log().Tracef("      + Adding %s = %s to branch", id, current[id].Name)
+
 				// Update the branch node sort order, if the leaf has a lower sort
-				if sortOrder < currentItem.SortOrder {
-					currentItem.SortOrder = sortOrder
-				}
+			} else if sortOrder < currentItem.SortOrder {
+				currentItem.SortOrder = sortOrder
 			}
 			// Step down branch
 			currentList = &current[id].Children // Get parent list before stepping into child
@@ -233,27 +207,25 @@ func buildNavigation(nav *navigation.NavigationNode, path string, path_base stri
 		} else {
 			// Leaf node
 			if currentItem, ok := current[id]; !ok {
-				current[id] = &navigation.NavigationNode{
-					Id:        id,
+				current[id] = &navigation.Node{
+					ID:        id,
 					SortOrder: sortOrder,
-					Uri:       route,
+					URI:       route,
 					Name:      name,
-					ChildMap:  make(map[string]*navigation.NavigationNode),
-					Children:  make([]*navigation.NavigationNode, 0),
+					ChildMap:  make(map[string]*navigation.Node),
+					Children:  make([]*navigation.Node, 0),
 				}
 				*currentList = append(*currentList, current[id])
-				logger.Tracef(nil, "      + Adding %s = %s to leaf node [a] Sort %s\n", current[id].Uri, current[id].Name, sortOrder)
+				log().Tracef("      + Adding %s = %s to leaf node [a] Sort %s", current[id].URI, current[id].Name, sortOrder)
 			} else {
 				// The page is a leaf node, but sits at a branch node. This means that the branch
 				// node has content! Set the uri, and adjust the sort order, if necessary.
-				currentItem.Uri = route
+				currentItem.URI = route
 				if sortOrder < currentItem.SortOrder {
 					currentItem.SortOrder = sortOrder
 				}
-				logger.Tracef(nil, "      + Adding %s = %s to leaf node [b] Sort %s\n", currentItem.Uri, currentItem.Name, sortOrder)
+				log().Tracef("      + Adding %s = %s to leaf node [b] Sort %s", currentItem.URI, currentItem.Name, sortOrder)
 			}
 		}
 	}
 }
-
-// ---------------------------------------------------------------------------

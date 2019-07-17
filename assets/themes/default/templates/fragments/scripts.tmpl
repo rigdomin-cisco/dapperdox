@@ -10,7 +10,7 @@
 
             // Favour access tokens over api keys
           [: range $name, $security := .Method.Security :]
-          [: if $security.Scheme.IsApiKey :]
+          [: if $security.Scheme.IsAPIKey :]
             if     ( accessToken != "" ) { request.headers = {Authorization: "Bearer "+accessToken}; }
             else if( basicAuth   != "" ) { request.headers = {Authorization: "Basic "+basicAuth}; }
             else if( apiKey != "" ) {

@@ -67,7 +67,7 @@
       <div class="table-responsive">
         <table class="table table-striped">
             [: range $name, $security := .Method.Security :]
-              [: if $security.Scheme.IsApiKey :]
+              [: if $security.Scheme.IsAPIKey :]
                 <tr class="form-group">
                     <td>API key</td>
                     <td>

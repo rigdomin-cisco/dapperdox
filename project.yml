@@ -1,0 +1,6 @@
+metadata:
+  name: dapperdox
+  namespace: kenjones-cisco
+  import: github.com/kenjones-cisco/dapperdox
+  build:
+    - target: .

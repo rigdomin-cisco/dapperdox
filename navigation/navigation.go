@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2016-2017 dapperdox.com 
+Copyright (C) 2016-2017 dapperdox.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,20 +15,22 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
+
+// Package navigation provides structure for holding API navigation.
 package navigation
 
-import ()
-
-type NavigationNode struct {
-	ChildMap  map[string]*NavigationNode
-	Children  []*NavigationNode
+// Node represents the relationship between pages.
+type Node struct {
+	ChildMap  map[string]*Node
+	Children  []*Node
 	SortOrder string
 	Name      string
-	Id        string
-	Uri       string
+	ID        string
+	URI       string
 }
 
-type ByOrder []*NavigationNode
+// ByOrder implements the Sorter interface for array of Node
+type ByOrder []*Node
 
 func (n ByOrder) Len() int {
 	return len(n)
