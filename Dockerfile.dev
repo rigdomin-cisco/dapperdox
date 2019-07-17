@@ -15,11 +15,7 @@ RUN wget -O /usr/local/bin/jq "https://github.com/stedolan/jq/releases/download/
 
 RUN go get github.com/golangci/golangci-lint/cmd/golangci-lint \
     && go get golang.org/x/tools/cmd/goimports \
-    && go get github.com/mattn/goveralls \
     && go get github.com/mitchellh/gox \
-    && go get github.com/motemen/gobump/cmd/gobump \
-    && go get github.com/git-chglog/git-chglog/cmd/git-chglog \
-    && go get github.com/tcnksm/ghr \
     && curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 
 ENV CGO_ENABLED 0
