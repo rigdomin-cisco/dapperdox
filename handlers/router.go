@@ -8,21 +8,20 @@ import (
 	"time"
 
 	"github.com/gorilla/handlers"
-	"github.com/gorilla/pat"
-	"github.com/justinas/alice"
+	"github.com/gorilla/mux"
 	"github.com/justinas/nosurf"
 	"github.com/spf13/viper"
 
 	"github.com/kenjones-cisco/dapperdox/config"
 	"github.com/kenjones-cisco/dapperdox/handlers/guides"
 	"github.com/kenjones-cisco/dapperdox/handlers/home"
+	"github.com/kenjones-cisco/dapperdox/handlers/proxy"
 	"github.com/kenjones-cisco/dapperdox/handlers/reference"
 	"github.com/kenjones-cisco/dapperdox/handlers/specs"
 	"github.com/kenjones-cisco/dapperdox/handlers/static"
 	"github.com/kenjones-cisco/dapperdox/handlers/timeout"
 	log "github.com/kenjones-cisco/dapperdox/logger"
 	"github.com/kenjones-cisco/dapperdox/network"
-	"github.com/kenjones-cisco/dapperdox/proxy"
 	"github.com/kenjones-cisco/dapperdox/render"
 	"github.com/kenjones-cisco/dapperdox/spec"
 	"github.com/kenjones-cisco/dapperdox/version"
@@ -30,9 +29,14 @@ import (
 
 // NewRouterChain creates a router with a chain of middlewares that acts as an http.Handler
 func NewRouterChain() http.Handler {
-	// TODO(kenjones): replace github.com/gorilla/pat with github.com/gorilla/mux
-	router := pat.New()
-	chain := alice.New(withLogger, timeoutHandler, withCsrf, injectHeaders).Then(router)
+	router := mux.NewRouter()
+	router.Use(
+		handlers.RecoveryHandler(handlers.RecoveryLogger(log.Logger()), handlers.PrintRecoveryStack(true)),
+		withLogger,
+		timeoutHandler,
+		withCsrf,
+		injectHeaders,
+	)
 
 	listener, err := network.NewListener()
 	if err != nil {
@@ -47,7 +51,7 @@ func NewRouterChain() http.Handler {
 		log.Logger().Trace("Listen for and serve swagger spec requests for start up")
 		wg.Add(1)
 		sg.Done()
-		_ = http.Serve(listener, chain)
+		_ = http.Serve(listener, router)
 		log.Logger().Trace("Finished service swagger specs for start up")
 		wg.Done()
 	}()
@@ -73,7 +77,7 @@ func NewRouterChain() http.Handler {
 	_ = listener.Close() // Stop serving specs
 	wg.Wait()            // wait for go routine serving specs to terminate
 
-	return chain
+	return router
 }
 
 func withLogger(h http.Handler) http.Handler {

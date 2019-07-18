@@ -37,7 +37,7 @@ show_html_report() {
 }
 
 show_ci_report() {
-    goveralls -coverprofile="$profile" -service=travis-ci
+    show_html_report
 }
 
 _done() {

@@ -67,7 +67,7 @@ func main() {
 		log.Logger().Fatalf("Error listening on %s: %s", viper.GetString(config.BindAddr), err)
 	}
 
-	if err = http.Serve(listener, chain); err != nil {
+	if err = http.Serve(listener, chain); err != nil && err != http.ErrServerClosed {
 		log.Logger().Fatalf("%v", err)
 	}
 }

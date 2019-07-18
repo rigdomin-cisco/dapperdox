@@ -38,16 +38,12 @@
   version = "1.4.0"
 
 [[constraint]]
-  name = "github.com/gorilla/pat"
-  version = "1.0.0"
+  name = "github.com/gorilla/mux"
+  version = "1.7.3"
 
 [[constraint]]
   branch = "master"
   name = "github.com/ian-kent/htmlform"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/justinas/alice"
 
 [[constraint]]
   branch = "master"

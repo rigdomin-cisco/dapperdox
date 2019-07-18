@@ -7,5 +7,5 @@ import (
 )
 
 func log() logrus.Ext1FieldLogger {
-	return logger.Logger().WithField("pkg", "timeout")
+	return logger.Logger().WithField("pkg", "handlers.timeout")
 }

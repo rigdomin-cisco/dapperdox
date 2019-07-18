@@ -25,7 +25,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/gorilla/pat"
+	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
 
 	"github.com/kenjones-cisco/dapperdox/config"
@@ -42,7 +42,7 @@ func (r *responseCapture) WriteHeader(status int) {
 }
 
 // Register handles registering paths to proxy.
-func Register(r *pat.Router) {
+func Register(r *mux.Router) {
 	log().Debug("Registering proxied paths:")
 
 	for k, v := range viper.GetStringMapString(config.ProxyPath) {
@@ -52,7 +52,7 @@ func Register(r *pat.Router) {
 	log().Debug("Registering proxied paths done.")
 }
 
-func register(rtr *pat.Router, routePattern, target string) {
+func register(rtr *mux.Router, routePattern, target string) {
 
 	u, _ := url.Parse(target)
 

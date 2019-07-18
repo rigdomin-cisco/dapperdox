@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PROJECT_FILE="${PROJECT_FILE:-project.yml}"
-VERSION=$(gobump show -r version)
+VERSION=$(yaml read "${PROJECT_FILE}" metadata.version)
 
 get_targets() {
     local data

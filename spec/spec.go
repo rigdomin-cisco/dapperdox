@@ -55,7 +55,7 @@ var collectionTable = map[string]string{
 	"ssv":   "space separated",
 	"tsv":   "tab separated",
 	"pipes": "pipe separated",
-	"multi": "multiple occurances",
+	"multi": "multiple occurrences",
 }
 
 var sortTypes = map[string]bool{

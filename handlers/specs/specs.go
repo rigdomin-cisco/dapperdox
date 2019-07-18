@@ -26,7 +26,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gorilla/pat"
+	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
 
 	"github.com/kenjones-cisco/dapperdox/config"
@@ -36,7 +36,7 @@ var specMap map[string][]byte
 var specReplacer *strings.Replacer
 
 // Register creates routes for each static resource
-func Register(r *pat.Router) {
+func Register(r *mux.Router) {
 
 	log().Info("Registering specifications")
 

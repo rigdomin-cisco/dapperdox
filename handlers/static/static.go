@@ -25,14 +25,14 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gorilla/pat"
+	"github.com/gorilla/mux"
 
 	"github.com/kenjones-cisco/dapperdox/render"
 	"github.com/kenjones-cisco/dapperdox/render/asset"
 )
 
 // Register creates routes for each static resource
-func Register(r *pat.Router) {
+func Register(r *mux.Router) {
 	log().Debug("registering not found handler in static package")
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {

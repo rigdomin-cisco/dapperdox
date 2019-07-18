@@ -22,7 +22,7 @@ package reference
 import (
 	"net/http"
 
-	"github.com/gorilla/pat"
+	"github.com/gorilla/mux"
 
 	"github.com/kenjones-cisco/dapperdox/render"
 	"github.com/kenjones-cisco/dapperdox/spec"
@@ -35,7 +35,7 @@ var pathVersionMethod map[string]versionedMethod     // Key is path
 var pathVersionResource map[string]versionedResource // Key is path
 
 // Register creates routes for specification resource
-func Register(r *pat.Router) {
+func Register(r *mux.Router) {
 	log().Info("Registering reference documentation")
 
 	pathVersionMethod = make(map[string]versionedMethod)

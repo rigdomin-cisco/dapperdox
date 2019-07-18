@@ -22,7 +22,7 @@ package home
 import (
 	"net/http"
 
-	"github.com/gorilla/pat"
+	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
 
 	"github.com/kenjones-cisco/dapperdox/config"
@@ -31,7 +31,7 @@ import (
 )
 
 // Register creates routes for each home handler
-func Register(r *pat.Router) {
+func Register(r *mux.Router) {
 	log().Debug("registering handlers for home page")
 
 	// Homepages for each loaded specification

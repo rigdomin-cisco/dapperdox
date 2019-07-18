@@ -26,10 +26,6 @@
 (line 180) default to latest if version not found, or 404 ?
 
 
-### ``handlers/router.go``
-(line 33) (kenjones): replace github.com/gorilla/pat with github.com/gorilla/mux
-
-
 ### ``render/asset/asset.go``
 (line 120) this should be applied to files also.
 

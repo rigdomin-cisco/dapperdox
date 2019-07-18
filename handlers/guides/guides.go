@@ -25,7 +25,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/gorilla/pat"
+	"github.com/gorilla/mux"
 
 	"github.com/kenjones-cisco/dapperdox/navigation"
 	"github.com/kenjones-cisco/dapperdox/render"
@@ -34,7 +34,7 @@ import (
 )
 
 // Register routes for guide pages
-func Register(r *pat.Router) {
+func Register(r *mux.Router) {
 
 	log().Info("Registering guides")
 
@@ -49,7 +49,7 @@ func Register(r *pat.Router) {
 	register(r, "assets/templates", nil)
 }
 
-func register(r *pat.Router, base string, specification *spec.APISpecification) {
+func register(r *mux.Router, base string, specification *spec.APISpecification) {
 
 	rootNode := "/guides"
 	routeBase := "/guides"
