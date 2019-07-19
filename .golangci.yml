@@ -153,7 +153,7 @@ linters:
     - gochecknoglobals
     - gochecknoinits
     - gosec
-    - lll
+    # - lll
     - scopelint
   # disable-all: false
   # presets:

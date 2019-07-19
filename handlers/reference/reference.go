@@ -154,7 +154,16 @@ func apiHandler(specification *spec.APISpecification, api spec.APIGroup) func(w 
 
 		log().Tracef("-- template: %s  Version %s", tmpl, version)
 
-		render.HTML(w, http.StatusOK, tmpl, render.DefaultVars(req, specification, render.Vars{"Title": api.Name, "API": api, "Methods": methods, "Version": version, "Versions": versions, "LatestVersion": api.CurrentVersion}))
+		render.HTML(w, http.StatusOK, tmpl,
+			render.DefaultVars(req, specification,
+				render.Vars{
+					"Title":         api.Name,
+					"API":           api,
+					"Methods":       methods,
+					"Version":       version,
+					"Versions":      versions,
+					"LatestVersion": api.CurrentVersion,
+				}))
 	}
 }
 
@@ -180,7 +189,16 @@ func methodHandler(specification *spec.APISpecification, api spec.APIGroup, path
 		// TODO default to latest if version not found, or 404 ?
 		method = pathVersionMethod[path][version]
 
-		render.HTML(w, http.StatusOK, tmpl, render.DefaultVars(req, specification, render.Vars{"Title": method.Name, "API": api, "Method": method, "Version": version, "Versions": versions, "LatestVersion": api.CurrentVersion}))
+		render.HTML(w, http.StatusOK, tmpl,
+			render.DefaultVars(req, specification,
+				render.Vars{
+					"Title":         method.Name,
+					"API":           api,
+					"Method":        method,
+					"Version":       version,
+					"Versions":      versions,
+					"LatestVersion": api.CurrentVersion,
+				}))
 	}
 }
 

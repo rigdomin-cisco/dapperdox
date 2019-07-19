@@ -69,7 +69,8 @@ func init() {
 	pflag.String(SpecDir, "", "OpenAPI specification (swagger) directory")
 	pflag.StringSlice(SpecFilename, []string{}, "The filename of the OpenAPI specification file within the spec-dir. May be multiply defined.")
 	pflag.StringToString(SpecRewriteURL, map[string]string{}, "The URLs in the swagger specifications to be rewritten as site-url")
-	pflag.Bool(ForceSpecList, false, "Force the homepage to be the summary list of available specifications. The default when serving a single OpenAPI specification is to make the homepage the API summary.")
+	pflag.Bool(ForceSpecList, false,
+		"Force the homepage to be the summary list of available specifications. The default when serving a single OpenAPI specification is to make the homepage the API summary.")
 
 	viper.SetDefault(SpecFilename, []string{"/swagger.json"})
 

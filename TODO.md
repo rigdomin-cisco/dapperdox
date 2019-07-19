@@ -15,15 +15,13 @@
 
 
 ### ``formatter/markdown.go``
-(line 58) : Factor out the CSS for just headings.
+(line 106) : Clean up and improve this code.
 
-(line 135) : Clean up and improve this code.
-
-(line 270) : Still not completely filtered out.
+(line 241) : Still not completely filtered out.
 
 
 ### ``handlers/reference/reference.go``
-(line 180) default to latest if version not found, or 404 ?
+(line 189) default to latest if version not found, or 404 ?
 
 
 ### ``render/asset/asset.go``

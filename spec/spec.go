@@ -997,7 +997,8 @@ func (c *APISpecification) compileproperties(s *spec.Schema, r *Resource, method
 	}
 }
 
-func (c *APISpecification) processProperty(s *spec.Schema, name string, r *Resource, method *Method, id string, required map[string]bool, jsonRep map[string]interface{}, myFQNS []string, chopped, isRequestResource bool) {
+func (c *APISpecification) processProperty(s *spec.Schema, name string, r *Resource, method *Method, id string,
+	required map[string]bool, jsonRep map[string]interface{}, myFQNS []string, chopped, isRequestResource bool) {
 
 	newFQNS := prepareNamespace(myFQNS, id, name, chopped)
 
