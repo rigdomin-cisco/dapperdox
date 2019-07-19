@@ -26,44 +26,7 @@ import (
 	"github.com/sourcegraph/annotate"
 	"github.com/sourcegraph/syntaxhighlight"
 	"golang.org/x/net/html"
-	"golang.org/x/net/html/atom"
 )
-
-// Markdown renders GitHub Flavored Markdown text.
-func Markdown(text []byte) []byte {
-	const htmlFlags = 0
-	renderer := &renderer{Html: blackfriday.HtmlRenderer(htmlFlags, "", "").(*blackfriday.Html)}
-	unsanitized := blackfriday.Markdown(text, renderer, extensions)
-	return policy.SanitizeBytes(unsanitized)
-}
-
-// Heading returns a heading HTML node with title text.
-// The heading comes with an anchor based on the title.
-//
-// heading can be one of atom.H1, atom.H2, atom.H3, atom.H4, atom.H5, atom.H6.
-func Heading(heading atom.Atom, title string) *html.Node {
-	aName := sanitized_anchor_name.Create(title)
-	a := &html.Node{
-		Type: html.ElementNode, Data: atom.A.String(),
-		Attr: []html.Attribute{
-			{Key: atom.Name.String(), Val: aName},
-			{Key: atom.Class.String(), Val: "anchor"},
-			{Key: atom.Href.String(), Val: "#" + aName},
-			{Key: atom.Rel.String(), Val: "nofollow"},
-			{Key: "aria-hidden", Val: "true"},
-		},
-	}
-	span := &html.Node{
-		Type: html.ElementNode, Data: atom.Span.String(),
-		Attr:       []html.Attribute{{Key: atom.Class.String(), Val: "octicon-link"}}, // TODO: Factor out the CSS for just headings.
-		FirstChild: link(),
-	}
-	a.AppendChild(span)
-	h := &html.Node{Type: html.ElementNode, Data: heading.String()}
-	h.AppendChild(a)
-	h.AppendChild(&html.Node{Type: html.TextNode, Data: title})
-	return h
-}
 
 // extensions for GitHub Flavored Markdown-like parsing.
 const extensions = blackfriday.EXTENSION_NO_INTRA_EMPHASIS |
@@ -86,6 +49,14 @@ var policy = func() *bluemonday.Policy {
 	p.AllowDataURIImages()
 	return p
 }()
+
+// Markdown renders GitHub Flavored Markdown text.
+func Markdown(text []byte) []byte {
+	const htmlFlags = 0
+	r := &renderer{Html: blackfriday.HtmlRenderer(htmlFlags, "", "").(*blackfriday.Html)}
+	unsanitized := blackfriday.Markdown(text, r, extensions)
+	return policy.SanitizeBytes(unsanitized)
+}
 
 type renderer struct {
 	*blackfriday.Html

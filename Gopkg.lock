@@ -430,7 +430,6 @@
     "github.com/spf13/viper",
     "github.com/unrolled/render",
     "golang.org/x/net/html",
-    "golang.org/x/net/html/atom",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
