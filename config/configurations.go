@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -16,8 +18,8 @@ const (
 	TLSCert            = "tls-certificate"
 	TLSKey             = "tls-key"
 	SiteURL            = "site-url"
-	ProxyPath          = "proxy-path"
-	DocumentRewriteURL = "document-rewrite-url"
+	ProxyPath          = "proxy.path"
+	DocumentRewriteURL = "document.rewrite.url"
 
 	// assets
 	DefaultAssetsDir = "default-assets-dir"
@@ -29,10 +31,11 @@ const (
 	ThemeDir = "theme-dir"
 
 	// spec
-	SpecDir        = "spec-dir"
-	SpecFilename   = "spec-filename"
-	SpecRewriteURL = "spec-rewrite-url"
-	ForceSpecList  = "force-specification-list"
+	SpecDir         = "spec-dir"
+	SpecFilename    = "spec-filename"
+	SpecDefaultHost = "spec.default.host"
+	SpecRewriteURL  = "spec.rewrite.url"
+	ForceSpecList   = "force-specification-list"
 )
 
 var defaultConfigPaths = []string{
@@ -56,8 +59,6 @@ func init() {
 	pflag.String(TLSCert, "", "The fully qualified path to the TLS certificate file. For HTTP over TLS (HTTPS) both a certificate and a key must be provided")
 	pflag.String(TLSKey, "", "The fully qualified path to the TLS private key file. For HTTP over TLS (HTTPS) both a certificate and a key must be provided")
 	pflag.String(SiteURL, "http://localhost:3123/", "Public URL of the documentation service")
-	pflag.StringToString(ProxyPath, map[string]string{}, "Give a path to proxy though to another service. May be multiply defined. Format is local-path=scheme://host/dst-path")
-	pflag.StringToString(DocumentRewriteURL, map[string]string{}, "Specify a document URL that is to be rewritten. May be multiply defined. Format: from=to")
 
 	pflag.String(DefaultAssetsDir, "assets", "Default assets directory")
 	pflag.String(AssetsDir, "", "Assets to serve. Effectively the document root")
@@ -68,11 +69,11 @@ func init() {
 
 	pflag.String(SpecDir, "", "OpenAPI specification (swagger) directory")
 	pflag.StringSlice(SpecFilename, []string{}, "The filename of the OpenAPI specification file within the spec-dir. May be multiply defined.")
-	pflag.StringToString(SpecRewriteURL, map[string]string{}, "The URLs in the swagger specifications to be rewritten as site-url")
 	pflag.Bool(ForceSpecList, false,
 		"Force the homepage to be the summary list of available specifications. The default when serving a single OpenAPI specification is to make the homepage the API summary.")
 
 	viper.SetDefault(SpecFilename, []string{"/swagger.json"})
+	viper.SetDefault(SpecDefaultHost, "127.0.0.1")
 
 	_ = viper.BindEnv(cfgDirKey, "CONFIG_DIR")
 	_ = viper.BindEnv(LogLevel, "LOGLEVEL")
@@ -81,8 +82,6 @@ func init() {
 	_ = viper.BindEnv(TLSCert, "TLS_CERTIFICATE")
 	_ = viper.BindEnv(TLSKey, "TLS_KEY")
 	_ = viper.BindEnv(SiteURL, "SITE_URL")
-	_ = viper.BindEnv(ProxyPath, "PROXY_PATH")
-	_ = viper.BindEnv(DocumentRewriteURL, "DOCUMENT_REWRITE_URL")
 
 	_ = viper.BindEnv(DefaultAssetsDir, "DEFAULT_ASSETS_DIR")
 	_ = viper.BindEnv(AssetsDir, "ASSETS_DIR")
@@ -93,7 +92,7 @@ func init() {
 
 	_ = viper.BindEnv(SpecDir, "SPEC_DIR")
 	_ = viper.BindEnv(SpecFilename, "SPEC_FILENAME")
-	_ = viper.BindEnv(SpecRewriteURL, "SPEC_REWRITE_URL")
+	_ = viper.BindEnv(SpecDefaultHost, "SPEC_DEFAULT_HOST")
 	_ = viper.BindEnv(ForceSpecList, "FORCE_SPECIFICATION_LIST")
 }
 
@@ -109,7 +108,9 @@ func Init() {
 		viper.AddConfigPath(p)
 	}
 
-	_ = viper.ReadInConfig()
+	if err := viper.ReadInConfig(); err == nil {
+		fmt.Printf("Using config: %s\n", viper.ConfigFileUsed())
+	}
 
 	if err := viper.Unmarshal(&C); err != nil {
 		panic(err)

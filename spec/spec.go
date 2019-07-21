@@ -38,8 +38,14 @@ import (
 )
 
 const (
-	arrayType     = "array"
-	visibilityExt = "x-visibility"
+	arrayType        = "array"
+	visibilityExt    = "x-visibility"
+	navMethodNameExt = "x-navigateMethodsByName"
+	sortMethodsByExt = "x-sortMethodsBy"
+	versionExt       = "x-version"
+	opNameExt        = "x-operationName"
+	pathNameExt      = "x-pathName"
+	excludeOpExt     = "x-excludeFromOperations"
 )
 
 // all defined ResourceOrigin
@@ -316,9 +322,14 @@ func (c *APISpecification) load(specLocation, specHost string) error {
 		scheme = apispec.Schemes[0]
 	}
 
-	u, err := url.Parse(scheme + "://" + apispec.Host)
-	if err != nil {
-		return err
+	host := apispec.Host
+	if host == "" {
+		host = viper.GetString(config.SpecDefaultHost)
+	}
+
+	u := &url.URL{
+		Scheme: scheme,
+		Host:   host,
 	}
 
 	c.APIInfo.Description = string(formatter.Markdown([]byte(apispec.Info.Description)))
@@ -335,13 +346,14 @@ func (c *APISpecification) load(specLocation, specHost string) error {
 	c.getSecurityDefinitions(apispec)
 	c.getDefaultSecurity(apispec)
 
-	methodNavByName := false // Should methods in the navigation be presented by type (GET, POST) or name (string)?
-	if byname, ok := apispec.Extensions["x-navigateMethodsByName"].(bool); ok {
+	// Should methods in the navigation be presented by type (GET, POST) or name (string)?
+	methodNavByName := false
+	if byname, ok := apispec.Extensions[navMethodNameExt].(bool); ok {
 		methodNavByName = byname
 	}
 
 	var methodSortBy []string
-	if sortByList, ok := apispec.Extensions["x-sortMethodsBy"].([]interface{}); ok {
+	if sortByList, ok := apispec.Extensions[sortMethodsByExt].([]interface{}); ok {
 		for _, sortBy := range sortByList {
 			keyname := sortBy.(string)
 			if _, ok := sortTypes[keyname]; !ok {
@@ -414,7 +426,7 @@ func (c *APISpecification) load(specLocation, specHost string) error {
 			}
 
 			var ver string
-			if ver, ok = pathItem.Extensions["x-version"].(string); !ok {
+			if ver, ok = pathItem.Extensions[versionExt].(string); !ok {
 				ver = "latest"
 			}
 			api.CurrentVersion = ver
@@ -480,9 +492,8 @@ func (c *APISpecification) getMethod(tag spec.Tag, api *APIGroup, methods *[]Met
 
 	// Filter and sort by matching current top-level tag with the operation tags.
 	// If Tagging is not used by spec, then process each operation without filtering.
-	taglen := len(operation.Tags)
-	log().Tracef("  Operation tag length: %d", taglen)
-	if taglen == 0 {
+	log().Tracef("  Operation tag length: %d", len(operation.Tags))
+	if len(operation.Tags) == 0 {
 		if tag.Name != "" {
 			log().Tracef("Skipping %s - Operation does not contain a tag member, and tagging is in use.", operation.Summary)
 			return
@@ -549,7 +560,7 @@ func (c *APISpecification) processMethod(api *APIGroup, pathItem *spec.PathItem,
 	var gotOpname bool
 
 	operationName := methodname
-	if opname, gotOpname = o.Extensions["x-operationName"].(string); gotOpname {
+	if opname, gotOpname = o.Extensions[opNameExt].(string); gotOpname {
 		operationName = opname
 	}
 
@@ -602,7 +613,7 @@ func (c *APISpecification) processMethod(api *APIGroup, pathItem *spec.PathItem,
 	// First try the vendor extension x-pathName, falling back to summary if not set.
 	// Note, that the APIGroup will get the last pathName set on the path methods added to the group (by tag).
 	//
-	if pathname, ok := pathItem.Extensions["x-pathName"].(string); ok {
+	if pathname, ok := pathItem.Extensions[pathNameExt].(string); ok {
 		api.Name = pathname
 		api.ID = titleToKebab(api.Name)
 	}
@@ -944,7 +955,7 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 	}
 
 	r.ReadOnly = originalS.ReadOnly
-	if ops, ok := originalS.Extensions["x-excludeFromOperations"].([]interface{}); ok && isRequestResource {
+	if ops, ok := originalS.Extensions[excludeOpExt].([]interface{}); ok && isRequestResource {
 		// Mark resource property as being excluded from operations with this name.
 		// This filtering only takes effect in a request body, just like readOnly, so when isRequestResource is true
 		for _, op := range ops {
@@ -1275,16 +1286,16 @@ func loadSpec(location string) (*loads.Document, error) {
 
 	document, err := loads.Spec(location)
 	if err != nil {
-		log().Errorf("Error: go-openapi/loads filed to load spec url [%s]: %s", location, err)
+		log().Errorf("Error: go-openapi/loads failed to load spec url [%s]: %s", location, err)
 		return nil, err
 	}
 
-	if err = spec.ExpandSpec(document.Spec(), nil); err != nil {
-		log().Errorf("Error: go-openapi/spec filed to expand spec: %s", err)
-		return nil, err
+	document, err = document.Expanded()
+	if err != nil {
+		log().Errorf("Error: go-openapi/loads failed to expand spec: %s", err)
 	}
 
-	return document, nil
+	return document, err
 }
 
 // jsonMarshalIndent Wrapper around MarshalIndent to prevent < > & from being escaped
