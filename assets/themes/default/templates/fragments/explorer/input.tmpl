@@ -22,12 +22,12 @@
         [: else :]
             [: if eq .Section "body" :]
             <textarea id="[: .Param.Name :]" data-type="[: .Section :]" name="[: .Param.Name :]" class="form-control"
-                [: if .Param.Required :] 
+                [: if .Param.Required :]
                 placeholder="Required" required="required"
                 [: end :]></textarea>
             [: else :]
             <input id="[: .Param.Name :]" type="text" data-type="[: .Section :]" name="[: .Param.Name :]" value=""  class="form-control"
-                [: if .Param.Required :] 
+                [: if .Param.Required :]
                 placeholder="Required" required="required"
                 [: end :]
                 />

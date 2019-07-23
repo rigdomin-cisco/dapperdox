@@ -24,12 +24,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
+	"github.com/go-openapi/swag"
 	"github.com/serenize/snaker"
 	"github.com/spf13/viper"
 
@@ -235,17 +237,10 @@ func (a SortMethods) Less(i, j int) bool { return a[i].SortKey < a[j].SortKey }
 func LoadSpecifications() error {
 
 	loadStatusCodes()
+	loadReplacer()
 
 	if APISuite == nil {
 		APISuite = make(map[string]*APISpecification)
-	}
-
-	specHost := viper.GetString(config.BindAddr)
-	if strings.HasPrefix(specHost, "0.0.0.0") {
-		splithost := strings.Split(specHost, ":")
-		splithost[0] = "127.0.0.1"
-		specHost = strings.Join(splithost, ":")
-		log().Tracef("Serving specifications from %s", specHost)
 	}
 
 	log().Infof("configured spec filenames: %v", viper.GetStringSlice(config.SpecFilename))
@@ -259,7 +254,7 @@ func LoadSpecifications() error {
 			specification = &APISpecification{}
 		}
 
-		if err := specification.load(specLocation, specHost); err != nil {
+		if err := specification.load(specLocation); err != nil {
 			return err
 		}
 
@@ -269,46 +264,19 @@ func LoadSpecifications() error {
 	return nil
 }
 
-func (api *APIGroup) getMethodSortKey(path, method, operation, navigation, summary string) string {
+func (c *APISpecification) load(specLocation string) error {
 
-	// Handle a list of sort-by values, so that ordering can be fixed.
-	// Sorting by path alone does not work because ordering changes around GET/POST/PUT Etc
-	var key string
-	for _, sortby := range api.MethodSortBy {
-		switch sortby {
-		case "path":
-			key += path
-		case "method":
-			key += method
-		case "operation":
-			key += operation
-		case "navigation":
-			key += navigation
-		case "summary":
-			key += summary
-		}
-		key += "~"
+	document, err := loadSpec(normalizeSpecLocation(specLocation))
+	if err != nil {
+		return err
 	}
-	if key == "" {
-		key = summary
-	}
-
-	return key
-}
-
-func (c *APISpecification) load(specLocation, specHost string) error {
+	apispec := document.Spec()
 
 	if isLocalSpecURL(specLocation) && !strings.HasPrefix(specLocation, "/") {
 		specLocation = "/" + specLocation
 	}
 
 	c.URL = specLocation
-
-	document, err := loadSpec(normalizeSpecLocation(specLocation, specHost))
-	if err != nil {
-		return err
-	}
-	apispec := document.Spec()
 
 	basePath := apispec.BasePath
 	basePathLen := len(basePath)
@@ -1178,6 +1146,33 @@ func (r *Response) compileHeaders(sr *spec.Response) {
 	}
 }
 
+func (api *APIGroup) getMethodSortKey(path, method, operation, navigation, summary string) string {
+
+	// Handle a list of sort-by values, so that ordering can be fixed.
+	// Sorting by path alone does not work because ordering changes around GET/POST/PUT Etc
+	var key string
+	for _, sortby := range api.MethodSortBy {
+		switch sortby {
+		case "path":
+			key += path
+		case "method":
+			key += method
+		case "operation":
+			key += operation
+		case "navigation":
+			key += navigation
+		case "summary":
+			key += summary
+		}
+		key += "~"
+	}
+	if key == "" {
+		key = summary
+	}
+
+	return key
+}
+
 func getTags(specification *spec.Swagger) []spec.Tag {
 	tags := make([]spec.Tag, 0)
 	tags = append(tags, specification.Tags...)
@@ -1284,9 +1279,15 @@ func loadSpec(location string) (*loads.Document, error) {
 
 	log().Infof("Importing OpenAPI specifications from %s", location)
 
-	document, err := loads.Spec(location)
+	raw, err := swag.LoadFromFileOrHTTP(location)
 	if err != nil {
-		log().Errorf("Error: go-openapi/loads failed to load spec url [%s]: %s", location, err)
+		log().Errorf("Error: go-openapi/swag failed to load spec [%s]: %s", location, err)
+		return nil, err
+	}
+
+	document, err := loads.Analyzed(json.RawMessage(replace(raw)), "")
+	if err != nil {
+		log().Errorf("Error: go-openapi/loads failed to analyze spec: %s", err)
 		return nil, err
 	}
 
@@ -1316,9 +1317,16 @@ func isLocalSpecURL(specURL string) bool {
 	return !match
 }
 
-func normalizeSpecLocation(specLocation, specHost string) string {
+func normalizeSpecLocation(specLocation string) string {
 	if isLocalSpecURL(specLocation) {
-		return "http://" + specHost + specLocation
+		log().Debugf("SpecDir = %s", viper.GetString(config.SpecDir))
+		base, err := filepath.Abs(viper.GetString(config.SpecDir))
+		if err != nil {
+			log().Errorf("Error forming specification path: %s", err)
+		}
+		base = filepath.ToSlash(base)
+		log().Debugf("SpecDir (base) = %s", base)
+		return filepath.Join(base, specLocation)
 	}
 	return specLocation
 }

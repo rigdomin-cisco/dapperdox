@@ -31,14 +31,14 @@ $(document).ready(function(){
 <div class="side-nav affix"> <!-- sidebar -->
     <ul class="nav nav-sidebar hide" id="navigation">
         [: if .NavigationGuides :]
-          [: if .APIs :] 
+          [: if .APIs :]
             <!-- <li class="heading heading-top">Guides</li> -->
-          [: end :] 
+          [: end :]
           [: template "fragments/sidenav_guides" . :]
-          [: if .APIs :] 
+          [: if .APIs :]
             <!-- <li class="heading">Reference</li> -->
-          [: end :] 
-        [: end :] 
+          [: end :]
+        [: end :]
         [: template "fragments/sidenav_reference" . :]
         [: template "fragments/sidenav_specification" . :]
     </ul>

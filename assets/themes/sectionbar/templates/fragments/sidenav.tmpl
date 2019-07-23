@@ -28,11 +28,11 @@ $(document).ready(function(){
 });
 </script>
 
-<div class="side-nav affix"> 
+<div class="side-nav affix">
     <ul class="nav nav-sidebar hide" id="navigation">
         [: if .Guide :]
             [: template "fragments/sidenav_guides" . :]
-        [: else :] 
+        [: else :]
             [: template "fragments/sidenav_reference" . :]
             [: template "fragments/sidenav_specification" . :]
         [: end :]

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/gorilla/handlers"
@@ -21,7 +20,6 @@ import (
 	"github.com/kenjones-cisco/dapperdox/handlers/static"
 	"github.com/kenjones-cisco/dapperdox/handlers/timeout"
 	log "github.com/kenjones-cisco/dapperdox/logger"
-	"github.com/kenjones-cisco/dapperdox/network"
 	"github.com/kenjones-cisco/dapperdox/render"
 	"github.com/kenjones-cisco/dapperdox/spec"
 	"github.com/kenjones-cisco/dapperdox/version"
@@ -38,30 +36,9 @@ func NewRouterChain() http.Handler {
 		injectHeaders,
 	)
 
-	listener, err := network.NewListener()
-	if err != nil {
-		log.Logger().Fatalf("%s", err)
-	}
-
-	var wg sync.WaitGroup
-	var sg sync.WaitGroup
-	sg.Add(1)
-
-	go func() {
-		log.Logger().Trace("Listen for and serve swagger spec requests for start up")
-		wg.Add(1)
-		sg.Done()
-		_ = http.Serve(listener, router)
-		log.Logger().Trace("Finished service swagger specs for start up")
-		wg.Done()
-	}()
-
-	sg.Wait()
-
-	// Register the spec routes (Listener and server must be up and running by now)
 	specs.Register(router)
 
-	if err = spec.LoadSpecifications(); err != nil {
+	if err := spec.LoadSpecifications(); err != nil {
 		log.Logger().Fatalf("Load specification error: %s", err)
 	}
 
@@ -73,9 +50,6 @@ func NewRouterChain() http.Handler {
 
 	home.Register(router)
 	proxy.Register(router)
-
-	_ = listener.Close() // Stop serving specs
-	wg.Wait()            // wait for go routine serving specs to terminate
 
 	return router
 }
