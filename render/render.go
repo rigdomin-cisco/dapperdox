@@ -256,17 +256,16 @@ type overlayStems struct {
 }
 
 func getOverlayStems(overlayAsset string) *overlayStems {
-	a := &overlayStems{
+	if overlayAsset != "" {
+		return &overlayStems{
+			asset: "/" + overlayAsset + "/overlay",
+		}
+	}
+	return &overlayStems{
 		specStem:   "assets/sections/",
 		globalStem: "assets/templates/",
 		asset:      ".md",
 	}
-	if len(overlayAsset) > 0 {
-		a.specStem = ""
-		a.globalStem = ""
-		a.asset = "/" + overlayAsset + "/overlay"
-	}
-	return a
 }
 
 func getMethodAssetPaths(overlayAsset string, paths *[]string, datamap map[string]interface{}) {

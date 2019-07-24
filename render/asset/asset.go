@@ -76,17 +76,6 @@ func MetaData(filename, name string) string {
 	return ""
 }
 
-// MetaDataFileList returns list of files with metadata
-func MetaDataFileList() []string {
-	files := make([]string, len(_metadata))
-	ix := 0
-	for key := range _metadata {
-		files[ix] = key
-		ix++
-	}
-	return files
-}
-
 // Compile specs
 func Compile(dir, prefix string) {
 
@@ -243,8 +232,7 @@ func processMetadata(doc []byte) ([]byte, map[string]string) {
 			metaValue = strings.TrimSpace(splitLine[1])
 		}
 
-		metaKey := strings.ToLower(splitLine[0])
-		metaData[metaKey] = metaValue
+		metaData[strings.ToLower(splitLine[0])] = metaValue
 	}
 
 	return []byte(newdoc), metaData

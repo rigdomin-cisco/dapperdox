@@ -21,13 +21,13 @@
 
 
 ### ``handlers/reference/reference.go``
-(line 189) default to latest if version not found, or 404 ?
+(line 186) default to latest if version not found, or 404 ?
 
 
 ### ``render/asset/asset.go``
-(line 120) this should be applied to files also.
+(line 109) this should be applied to files also.
 
-(line 234) Make this more efficient!
+(line 223) Make this more efficient!
 
 
 ### ``render/render.go``
@@ -35,5 +35,5 @@
 
 
 ### ``spec/spec.go``
-(line 659) - Dies if there are no responses...
+(line 638) - Dies if there are no responses...
 

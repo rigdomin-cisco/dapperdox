@@ -47,7 +47,6 @@ func NewRouterChain() http.Handler {
 	reference.Register(router)
 	guides.Register(router)
 	static.Register(router)
-
 	home.Register(router)
 	proxy.Register(router)
 

@@ -97,11 +97,8 @@ func Register(r *mux.Router) {
 }
 
 func getVersionMethod(api spec.APIGroup, version string) []spec.Method {
-
-	var methods []spec.Method
-	var ok bool
-
-	if methods, ok = api.Versions[version]; !ok {
+	methods, ok := api.Versions[version]
+	if !ok {
 		methods = api.Methods
 	}
 	return methods[0:]
