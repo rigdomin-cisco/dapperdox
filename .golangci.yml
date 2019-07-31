@@ -178,6 +178,7 @@ issues:
     - path: _test\.go
       linters:
         - dupl
+        - goconst
         - gosec
         - unparam
 

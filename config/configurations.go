@@ -37,6 +37,10 @@ const (
 	SpecDefaultHost = "spec.default.host"
 	SpecRewriteURL  = "spec.rewrite.url"
 	ForceSpecList   = "force-specification-list"
+
+	DiscoverInterval  = "discover.interval"
+	DiscoverNamespace = "discover.namespace"
+	DiscoverTimeout   = "discover.timeout"
 )
 
 var defaultConfigPaths = []string{
@@ -77,6 +81,10 @@ func init() {
 
 	viper.SetDefault(SpecFilename, []string{"/swagger.json"})
 	viper.SetDefault(SpecDefaultHost, "127.0.0.1")
+
+	viper.SetDefault(DiscoverInterval, "10s")
+	viper.SetDefault(DiscoverNamespace, "default")
+	viper.SetDefault(DiscoverTimeout, "300ms")
 
 	_ = viper.BindEnv(cfgDirKey, "CONFIG_DIR")
 	_ = viper.BindEnv(LogLevel, "LOGLEVEL")

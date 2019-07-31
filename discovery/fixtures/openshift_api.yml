@@ -1,0 +1,154 @@
+swagger: '2.0'
+info:
+  version: "0.1.0"
+  description: Manages provisioning of Openshift resources
+  title: MCMP - Openshift Service Manager
+
+schemes:
+  - http
+
+produces:
+  - application/vnd.cia.v1+json
+
+tags:
+  - name: openshift
+    description: Openshift service manager
+
+securityDefinitions:
+  token:
+    type: apiKey
+    name: WAMAUTH
+    in: header
+
+security:
+  - token: []
+
+basePath: /v1
+
+paths:
+  /openshift/callback/{id}:
+    parameters:
+      - name: "id"
+        in: path
+        description: Encoded ID
+        required: true
+        type: string
+      - name: "X-Request-Id"
+        in: "header"
+        description: Unique Identifier associated with the request
+        required: true
+        type: string
+        format: uuid
+    post:
+      tags:
+        - openshift
+      operationId: procCallback
+      summary: Process Callback
+      description: Process callback from CSP
+      consumes:
+        - application/vnd.cia.v1+json
+      parameters:
+        - name: resource
+          in: "body"
+          description: Resource
+          schema:
+            $ref: "#/definitions/resource"
+      responses:
+        204:
+          description: Service Unit Updated
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        404:
+          description: Resource Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+
+definitions:
+  resource:
+    title: Resource
+    description: Callback resource details.
+    type: object
+    properties:
+      resource_id:
+        title: Resource ID
+        description: Unique ID associated with the resource
+        type: string
+        format: uuid
+        example: 19a46ada-5282-4feb-b405-065f306fbee1
+      error:
+        $ref: '#/definitions/resource_error'
+
+  resource_error:
+    title: Error
+    description: Callback error, used by CSP to signal error in resource
+    type: object
+    required:
+      - msg
+      - code
+    properties:
+      msg:
+        title: Message
+        description: Error message
+        type: string
+        example: General failure
+      code:
+        title: Code
+        description: Unique code pertaining to this error
+        type: string
+        example: No more capacity
+
+  user:
+    x-visibility: private
+    type: object
+    title: User Structure
+    description: |
+      A User is the authenticated person performing actions.
+    required:
+      - name
+    properties:
+      name:
+        title: login name
+        description: human readable identifier
+        type: string
+      display:
+        title: display name
+        description: formal name used when greeting a person
+        type: string
+      token:
+        title: authentication token
+        description: token used during authentication
+        type: string

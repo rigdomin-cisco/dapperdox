@@ -1,0 +1,1007 @@
+swagger: '2.0'
+info:
+  version: "0.0.0"
+  title: MCMP - Identity and Access Manager
+
+schemes:
+  - http
+
+produces:
+  - application/vnd.cia.v1+json
+
+tags:
+  - name: iam
+
+securityDefinitions:
+  token:
+    type: apiKey
+    name: WAMAUTH
+    in: header
+
+security:
+  - token: []
+
+
+basePath: /v1
+
+
+paths:
+  /roles:
+    x-visibility: private
+    # get:
+    #   tags: [iam]
+    #   summary: Retrieves Role Definitions for a tenant
+    #   operationId: searchRoles
+    #   description: |
+    #     To apply filter criteria use the following approach:
+    #     `?<field><operator><value>`
+    #     Example: `?name=admin`
+    #   parameters:
+    #     - name: X-Tenant-ID
+    #       in: header
+    #       type: string
+    #       format: uuid
+    #       required: true
+    #     - name: fields
+    #       in: query
+    #       description: Filters the fields in each returned record. (comma-delimited)
+    #       required: false
+    #       type: string
+    #     - name: limit
+    #       in: query
+    #       description: Max number of records to return.
+    #       required: false
+    #       type: integer
+    #       minimum: 0
+    #     - name: offset
+    #       in: query
+    #       description: Segment of records to return incremented by limit.
+    #       required: false
+    #       type: integer
+    #       minimum: 0
+    #     - name: sort
+    #       in: query
+    #       description: Sort by fields that determines the order of the results. (comma-delimited)
+    #       required: false
+    #       type: string
+    #   responses:
+    #     200:
+    #       description: List of Roles
+    #       headers:
+    #         X-Request-Id:
+    #           description: Unique identifer associated with request
+    #           type: string
+    #           format: uuid
+    #         Link:
+    #           description: Links that help with paging of results (i.e. next, previous, first, last)
+    #           type: string
+    #       schema:
+    #         title: role list
+    #         type: object
+    #         properties:
+    #           response:
+    #             type: array
+    #             items:
+    #               $ref: "#/definitions/role"
+    #     401:
+    #       description: Authentication Failure
+    #       headers:
+    #         X-Request-Id:
+    #           description: Unique identifer associated with request
+    #           type: string
+    #           format: uuid
+    #     403:
+    #       description: Authorization Failure
+    #       headers:
+    #         X-Request-Id:
+    #           description: Unique identifer associated with request
+    #           type: string
+    #           format: uuid
+    #     default:
+    #       description: Default Response
+    #       headers:
+    #         X-Request-Id:
+    #           description: Unique identifer associated with request
+    #           type: string
+    #           format: uuid
+
+    post:
+      tags: [iam]
+      summary: Add Role
+      operationId: addRole
+      description: Add Role
+      consumes:
+        - application/vnd.cia.v1+json
+      parameters:
+        - name: "X-Request-Id"
+          in: "header"
+          description: Unique identifer associated with request
+          required: true
+          type: string
+          format: uuid
+        - name: role
+          description: body of role
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/role"
+      responses:
+        201:
+          description: Role added
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+            Location:
+              description: URL to the newly added Role
+              type: string
+              format: url
+        400:
+          $ref: "#/responses/400"
+        401:
+          $ref: "#/responses/401"
+        403:
+          $ref: "#/responses/403"
+        409:
+          $ref: "#/responses/409"
+        default:
+          $ref: "#/responses/500"
+
+  /roles/{roleId}:
+    x-visibility: private
+    parameters:
+      - name: "X-Request-Id"
+        in: header
+        description: Unique identifer associated with request
+        required: true
+        type: string
+        format: uuid
+      - name: roleId
+        description: Unique identifier for Role
+        in: path
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags: [iam]
+      summary: View Role
+      operationId: viewRole
+      description: View Role
+      responses:
+        200:
+          description: Role
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+          schema:
+            $ref: "#/definitions/role"
+        401:
+          $ref: "#/responses/401"
+        403:
+          $ref: "#/responses/403"
+        404:
+          $ref: "#/responses/404"
+        default:
+          $ref: "#/responses/500"
+
+  #   patch:
+  #     tags: [iam]
+  #     summary: Update Role
+  #     operationId: updateRole
+  #     description: Update/Modify Role
+  #     consumes:
+  #       - application/vnd.cia.v1+json
+  #     parameters:
+  #       - name: role
+  #         description: body of role
+  #         in: body
+  #         required: true
+  #         schema:
+  #           $ref: "#/definitions/role"
+  #     responses:
+  #       200:
+  #         description: Role updated
+  #         headers:
+  #           X-Request-Id:
+  #             description: Unique identifer associated with request
+  #             type: string
+  #             format: uuid
+  #       400:
+  #         description: Invalid Request Error
+  #         headers:
+  #           X-Request-Id:
+  #             description: Unique identifer associated with request
+  #             type: string
+  #             format: uuid
+  #       401:
+  #         description: Authentication Failure
+  #         headers:
+  #           X-Request-Id:
+  #             description: Unique identifer associated with request
+  #             type: string
+  #             format: uuid
+  #       403:
+  #         description: Authorization Failure
+  #         headers:
+  #           X-Request-Id:
+  #             description: Unique identifer associated with request
+  #             type: string
+  #             format: uuid
+  #       404:
+  #         description: Resource Not Found
+  #         headers:
+  #           X-Request-Id:
+  #             description: Unique identifer associated with request
+  #             type: string
+  #             format: uuid
+  #       default:
+  #         description: Default Response
+  #         headers:
+  #           X-Request-Id:
+  #             description: Unique identifer associated with request
+  #             type: string
+  #             format: uuid
+
+    delete:
+      tags: [iam]
+      summary: Delete Role
+      operationId: deleteRole
+      description: Delete/Retire Role
+      responses:
+        204:
+          description: Role deleted
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        401:
+          $ref: "#/responses/401"
+        403:
+          $ref: "#/responses/403"
+        404:
+          $ref: "#/responses/404"
+        default:
+          $ref: "#/responses/500"
+
+  /policies:
+    x-visibility: private
+    # get:
+    #   tags: [iam]
+    #   summary: Retrieves Policy Definitions for a tenant
+    #   operationId: searchPolicies
+    #   description: |
+    #     To apply filter criteria use the following approach:
+    #     `?<field><operator><value>`
+    #     Example: `?role_name=admin`
+    #   parameters:
+    #     - name: X-Tenant-ID
+    #       in: header
+    #       type: string
+    #       format: uuid
+    #       required: true
+    #     - name: fields
+    #       in: query
+    #       description: Filters the fields in each returned record. (comma-delimited)
+    #       required: false
+    #       type: string
+    #     - name: limit
+    #       in: query
+    #       description: Max number of records to return.
+    #       required: false
+    #       type: integer
+    #       minimum: 0
+    #     - name: offset
+    #       in: query
+    #       description: Segment of records to return incremented by limit.
+    #       required: false
+    #       type: integer
+    #       minimum: 0
+    #     - name: sort
+    #       in: query
+    #       description: Sort by fields that determines the order of the results. (comma-delimited)
+    #       required: false
+    #       type: string
+    #   responses:
+    #     200:
+    #       description: List of Policies
+    #       headers:
+    #         X-Request-Id:
+    #           description: Unique identifer associated with request
+    #           type: string
+    #           format: uuid
+    #         Link:
+    #           description: Links that help with paging of results (i.e. next, previous, first, last)
+    #           type: string
+    #       schema:
+    #         title: policy list
+    #         type: object
+    #         properties:
+    #           response:
+    #             type: array
+    #             items:
+    #               $ref: "#/definitions/policy"
+    #     401:
+    #       description: Authentication Failure
+    #       headers:
+    #         X-Request-Id:
+    #           description: Unique identifer associated with request
+    #           type: string
+    #           format: uuid
+    #     403:
+    #       description: Authorization Failure
+    #       headers:
+    #         X-Request-Id:
+    #           description: Unique identifer associated with request
+    #           type: string
+    #           format: uuid
+    #     default:
+    #       description: Default Response
+    #       headers:
+    #         X-Request-Id:
+    #           description: Unique identifer associated with request
+    #           type: string
+    #           format: uuid
+
+    post:
+      tags: [iam]
+      summary: Add Policy
+      operationId: addPolicy
+      description: Add Policy
+      consumes:
+        - application/vnd.cia.v1+json
+      parameters:
+        - name: "X-Request-Id"
+          in: "header"
+          description: Unique identifer associated with request
+          required: true
+          type: string
+          format: uuid
+        - name: policy
+          description: body of policy
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/policy"
+      responses:
+        201:
+          description: Policy added
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+            Location:
+              description: URL to the newly added Policy
+              type: string
+              format: url
+        400:
+          $ref: "#/responses/400"
+        401:
+          $ref: "#/responses/401"
+        403:
+          $ref: "#/responses/403"
+        409:
+          $ref: "#/responses/409"
+        default:
+          $ref: "#/responses/500"
+
+  /policies/{policyId}:
+    x-visibility: private
+    parameters:
+      - name: "X-Request-Id"
+        in: "header"
+        description: Unique identifier associated with request
+        required: true
+        type: string
+        format: uuid
+      - name: policyId
+        description: Unique identifier for the Policy
+        in: path
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags: [iam]
+      summary: View Policy
+      operationId: viewPolicy
+      description: View Policy
+      responses:
+        200:
+          description: Policy
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+          schema:
+            $ref: "#/definitions/policy"
+        401:
+          $ref: "#/responses/401"
+        403:
+          $ref: "#/responses/403"
+        404:
+          $ref: "#/responses/404"
+        default:
+          $ref: "#/responses/500"
+
+  #   patch:
+  #     tags: [iam]
+  #     summary: Update Policy
+  #     operationId: updatePolicy
+  #     description: Update/Modify Policy
+  #     consumes:
+  #       - application/vnd.cia.v1+json
+  #     parameters:
+  #       - name: policy
+  #         description: body of policy
+  #         in: body
+  #         required: true
+  #         schema:
+  #           $ref: "#/definitions/policy"
+  #     responses:
+  #       200:
+  #         description: Policy updated
+  #         headers:
+  #           X-Request-Id:
+  #             description: Unique identifer associated with request
+  #             type: string
+  #             format: uuid
+  #       400:
+  #         description: Invalid Request Error
+  #         headers:
+  #           X-Request-Id:
+  #             description: Unique identifer associated with request
+  #             type: string
+  #             format: uuid
+  #       401:
+  #         description: Authentication Failure
+  #         headers:
+  #           X-Request-Id:
+  #             description: Unique identifer associated with request
+  #             type: string
+  #             format: uuid
+  #       403:
+  #         description: Authorization Failure
+  #         headers:
+  #           X-Request-Id:
+  #             description: Unique identifer associated with request
+  #             type: string
+  #             format: uuid
+  #       404:
+  #         description: Resource Not Found
+  #         headers:
+  #           X-Request-Id:
+  #             description: Unique identifer associated with request
+  #             type: string
+  #             format: uuid
+  #       405:
+  #         description: Method not allowed
+  #         headers:
+  #           X-Request-Id:
+  #             description: Unique identifer associated with request
+  #             type: string
+  #             format: uuid
+  #       default:
+  #         description: Default Response
+  #         headers:
+  #           X-Request-Id:
+  #             description: Unique identifer associated with request
+  #             type: string
+  #             format: uuid
+
+    delete:
+      tags: [iam]
+      summary: Delete Policy
+      operationId: deletePolicy
+      description: Delete/Retire Policy
+      responses:
+        204:
+          description: Policy deleted
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        401:
+          $ref: "#/responses/401"
+        403:
+          $ref: "#/responses/403"
+        404:
+          $ref: "#/responses/404"
+        default:
+          $ref: "#/responses/500"
+
+  /usergroups:
+    parameters:
+      - name: "X-Request-Id"
+        in: "header"
+        description: Unique identifer associated with request
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags: [iam]
+      summary: List all Usergroups matching search criteria
+      operationId: listUsergroups
+      description: |
+        List Usergroups is a search operation.
+        This operation has 2 mutually exclusive parameters.
+        Only 1 parameter at a time to query against.
+        Filter is applied as:
+
+        `?tenant=<uuid>`
+        `?servicegroup=<uuid>`
+
+        Example: `?tenant=22148a04-61b3-4a24-83e4-7216a8c53304`
+      parameters:
+        - name: tenant
+          in: query
+          description: Filters the fields in each returned record
+          required: false
+          type: string
+          format: uuid
+        - name: servicegroup
+          in: query
+          description: Filters the fields in each returned record
+          required: false
+          type: string
+          format: uuid
+      responses:
+        200:
+          description: List all Usergroups matching search criteria
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/usergroup"
+        400:
+          $ref: "#/responses/400"
+        401:
+          $ref: "#/responses/401"
+        403:
+          $ref: "#/responses/403"
+        default:
+          $ref: "#/responses/500"
+
+    post:
+      tags: [iam]
+      summary: Add Usergroup
+      operationId: addUsergroup
+      description: Add Usergroup
+      consumes:
+        - application/vnd.cia.v1+json
+      parameters:
+        - name: "X-Tenant-Id"
+          in: "header"
+          description: Unique identifier associated with tenant
+          type: string
+          format: uuid
+          required: true
+        - name: "X-SG-Id"
+          in: "header"
+          description: Unique identifier associated with Service Group
+          type: string
+          format: uuid
+        - name: usergroup
+          description: body of usergroup
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/usergroup"
+      responses:
+        201:
+          description: Usergroup added
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+            Location:
+              description: URL to the newly added Usergroup
+              type: string
+              format: url
+        400:
+          $ref: "#/responses/400"
+        401:
+          $ref: "#/responses/401"
+        403:
+          $ref: "#/responses/403"
+        409:
+          $ref: "#/responses/409"
+        default:
+          $ref: "#/responses/500"
+
+  /usergroups/{usergroupId}:
+    parameters:
+      - name: "X-Request-Id"
+        in: header
+        description: Unique identifer associated with request
+        required: true
+        type: string
+        format: uuid
+      - name: usergroupId
+        description: Unique identifier for Usergroup
+        in: path
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags: [iam]
+      summary: View Usergroup
+      operationId: viewUsergroup
+      description: View Usergroup
+      responses:
+        200:
+          description: Usergroup
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+          schema:
+            $ref: "#/definitions/usergroup"
+        401:
+          $ref: "#/responses/401"
+        403:
+          $ref: "#/responses/403"
+        404:
+          $ref: "#/responses/404"
+        default:
+          $ref: "#/responses/500"
+
+    delete:
+      tags: [iam]
+      summary: Delete Usergroup
+      operationId: deleteUsergroup
+      description: Delete/Retire Usergroup
+      parameters:
+        - name: "X-Tenant-Id"
+          in: "header"
+          description: Unique identifier associated with tenant
+          type: string
+          format: uuid
+          required: true
+        - name: "X-SG-Id"
+          in: "header"
+          description: Unique identifier associated with Service Group
+          type: string
+          format: uuid
+      responses:
+        204:
+          description: Usergroup deleted
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        401:
+          $ref: "#/responses/401"
+        403:
+          $ref: "#/responses/403"
+        404:
+          $ref: "#/responses/404"
+        default:
+          $ref: "#/responses/500"
+
+    patch:
+      tags: [iam]
+      summary: Update Usergroup
+      operationId: updateUsergroup
+      description: Update Usergroup
+      consumes:
+        - application/vnd.cia.v1+json
+      parameters:
+        - name: "X-Tenant-Id"
+          in: "header"
+          description: Unique identifier associated with tenant
+          type: string
+          format: uuid
+          required: true
+        - name: "X-SG-Id"
+          in: "header"
+          description: Unique identifier associated with Service Group
+          type: string
+          format: uuid
+        - name: usergroup
+          description: The updateable attributes of the Usergroup
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/usergroup_partial"
+      responses:
+        204:
+          description: Usergroup Updated
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        400:
+          $ref: "#/responses/400"
+        401:
+          $ref: "#/responses/401"
+        403:
+          $ref: "#/responses/403"
+        404:
+          $ref: "#/responses/404"
+        409:
+          $ref: "#/responses/409"
+        default:
+          $ref: "#/responses/500"
+
+  /adgroups:
+    x-visibility: private
+    parameters:
+      - name: "X-Request-Id"
+        in: "header"
+        description: Unique identifier associated with request
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags: [iam]
+      summary: Verify AD Groups
+      operationId: verifyAdgroups
+      description: Verify AD Groups
+      parameters:
+        - name: "name"
+          in: "query"
+          description: List of ad group names to verify validity (comma-delimited)
+          required: true
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+      responses:
+        200:
+          description: Successful Verification of Ad Groups
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/adgroup"
+        default:
+          $ref: "#/responses/500"
+
+  /authorize:
+    x-visibility: private
+    parameters:
+      - name: "X-Request-Id"
+        in: "header"
+        description: Unique identifier associated with request
+        required: true
+        type: string
+        format: uuid
+      - name: "X-Tenant-Id"
+        in: "header"
+        description: Unique identifier associated with tenant to access
+        type: string
+        format: uuid
+        required: false
+      - name: "X-SG-Id"
+        in: "header"
+        description: Unique identifier associated with servicegroup to access
+        type: string
+        format: uuid
+        required: false
+      - name: "X-Resource"
+        in: "header"
+        description: Resource user is trying to access
+        type: string
+        required: true
+      - name: "X-Operation"
+        in: "header"
+        description: Operation of attempted request (GET, POST, etc.)
+        type: string
+        required: true
+    get:
+      tags: [iam]
+      summary: Authorize
+      operationId: authorize
+      description: Authorize
+      responses:
+        200:
+          description: Authorization Successul
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        403:
+          $ref: "#/responses/403"
+        default:
+          $ref: "#/responses/500"
+
+  /users/self:
+    parameters:
+      - name: "X-Request-Id"
+        in: "header"
+        description: Unique identifier associated with request
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags: [iam]
+      summary: Retrieve User's Information
+      operationId: getUserInfo
+      description: Retrieve User's Information
+      parameters:
+        - name: "extended"
+          in: "query"
+          description: Flag to determine if additional User information is desired.
+          type: boolean
+      responses:
+        200:
+          description: Successful retrieval of User Information
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+          schema:
+            $ref: "#/definitions/user_view"
+        default:
+          $ref: "#/responses/500"
+
+definitions:
+  adgroup:
+    x-visibility: private
+    title: Adgroup
+    description: A User's Active Directory Group
+    type: object
+    additionalProperties:
+      type: boolean
+
+  role:
+    x-visibility: private
+    title: Role
+    description: Group of Permissions
+    type: object
+    properties:
+      id:
+        title: Role Identifier
+        description: unique identifier for the role
+        type: string
+        format: uuid
+        readOnly: true
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      name:
+        title: Role Name
+        description: name for the role
+        type: string
+        example: admin
+      adgroup:
+        title: AD group
+        description: AD group for the role
+        type: string
+        example: mcmp-dev
+      domain:
+        title: MCMP Domain
+        description: Domain for the role
+        type: string
+        example: b249eeca-3312-43c5-90a7-a4a8345bb553
+
+  usergroup:
+    title: Usergroup
+    description: Group of Permissions for Templatized Policy Roles
+    type: object
+    properties:
+      id:
+        title: Usergroup Identifier
+        description: unique identifier for the usergroup
+        type: string
+        format: uuid
+        readOnly: true
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      adgroup:
+        title: AD group
+        description: AD group for the role
+        type: string
+        example: mcmp-dev
+      role_name:
+        title: Role Name
+        description: name of role (subject)
+        type: string
+        enum: ["tenant:admin", "tenant:operator", "servicegroup:admin", "servicegroup:operator"]
+        example: tenant:admin
+      scope:
+        title: Scope
+        description: scope of access for the usergroup.
+          current use of scope supports access restrictions on tenants and service groups
+          based on their UUID values.
+        type: string
+        example: b249eeca-3312-43c5-90a7-a4a8345bb553
+
+  usergroup_partial:
+    title: Usergroup
+    description: Group of Permissions for Templatized Policy Roles
+    type: object
+    properties:
+      adgroup:
+        title: AD group
+        description: AD group for the role
+        type: string
+        example: mcmp-dev
+
+  policy:
+    x-visibility: private
+    title: Policy
+    description: Permissions for a specific role
+    type: object
+    properties:
+      id:
+       title: Policy Identifier
+       description: unique identifier for the policy
+       type: string
+       format: uuid
+       readOnly: true
+       example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      role_name:
+       title: Role name
+       description: role name (subject) for the policy
+       type: string
+       example: tenant users
+      domain:
+        title: MCMP Domain
+        description: Tenant ID for the role
+        type: string
+        example: b249eeca-3312-43c5-90a7-a4a8345bb553
+      resource:
+       title: Resource
+       description: URI (object) for the policy
+       type: string
+       example: /*
+      operation:
+       title: Policy Operation
+       description: Target action/HTTP Methods
+       type: string
+       example: (GET)|(POST)|(PUT)|(PATCH)|(DELETE)
+
+  user:
+    x-visibility: private
+    type: object
+    title: user structure
+    description: |
+      A User is the authenticated person performing actions.
+    required:
+      - name
+    properties:
+      name:
+        title: login name
+        description: human readable identifier
+        type: string
+      display:
+        title: display name
+        description: formal name used when greeting a person
+        type: string
+      token:
+        title: authentication token
+        description: token used during authentication
+        type: string
+
+  user_view:
+    type: object
+    title: Auhenticated User
+    description: |
+      A User is the authenticated person performing actions.
+    properties:
+      username:
+        title: login name
+        description: human readable identifier
+        type: string
+      info:
+        type: object
+        additionalProperties:
+          type: object

@@ -1,0 +1,1333 @@
+swagger: '2.0'
+info:
+  version: "0.1.0"
+  title: MCMP - Cloud Service Manager
+  description: Provides management of the list of Services available to order via MCMP.
+
+schemes:
+  - http
+
+produces:
+  - application/vnd.cia.v1+json
+
+tags:
+  - name: services
+
+securityDefinitions:
+  token:
+    type: apiKey
+    name: WAMAUTH
+    in: header
+
+security:
+  - token: []
+
+basePath: /v1
+
+paths:
+  /services:
+    parameters:
+      - name: "X-Request-Id"
+        in: "header"
+        description: Unique identifer associated with request
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags: [services]
+      operationId: searchServices
+      summary: Search for Services
+      description: |
+        To apply filter criteria use the following approach:
+
+        `?<field><operator><value>`
+
+        Example: `?name=Test`
+
+      parameters:
+        - name: name
+          in: query
+          description: Search records by name
+          required: false
+          type: string
+          minLength: 3
+        - name: version
+          in: query
+          description: Search records by version
+          required: false
+          type: string
+          minLength: 3
+        - name: location
+          in: query
+          description: Search records by location
+          required: false
+          type: string
+          minLength: 3
+        - name: region
+          in: query
+          description: Search records by region
+          required: false
+          type: string
+          minLength: 3
+        - name: status
+          in: query
+          description: Search records by status
+          required: false
+          type: string
+          enum: [CREATING, ACTIVE, UPDATING, DELETING, INACTIVE, FAILED]
+        - name: fields
+          in: query
+          description: Filters the fields in each returned record. (comma-delimited)
+          required: false
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        - name: limit
+          in: query
+          description: Max number of records to return.
+          required: false
+          type: integer
+          minimum: 0
+        - name: offset
+          in: query
+          description: Segment of records to return incremented by limit.
+          required: false
+          type: integer
+          minimum: 0
+        - name: sort
+          in: query
+          description: Sort by fields that determines the order of the results. (comma-delimited)
+          required: false
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            pattern: '([-\+]\w+)'
+      responses:
+        200:
+          description: List of Services
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+            # Link:
+            #   description: Links that help with paging of results (i.e. next, previous, first, last)
+            #   type: string
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/service_view"
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+
+    post:
+      x-visibility: private
+      tags: [services]
+      operationId: addService
+      summary: Add Service
+      description: Add Service
+      consumes:
+        - application/vnd.cia.v1+json
+      parameters:
+        - name: "X-Tenant-Id"
+          description: Unique identifier for tenant
+          in: header
+          required: true
+          type: string
+          format: uuid
+        - name: service
+          description: body of service
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/service"
+      responses:
+        201:
+          description: Service Added
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+            Location:
+              description: URL to the newly added Service
+              type: string
+              format: url
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        409:
+          description: Conflict
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        422:
+          description: Unprocessable Entity
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+
+  /services/{serviceId}:
+    parameters:
+      - name: serviceId
+        description: Unique identifier for Service
+        in: path
+        required: true
+        type: string
+        format: uuid
+      - name: "X-Request-Id"
+        in: "header"
+        description: Unique identifer associated with request
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags: [services]
+      operationId: viewService
+      summary: View Service
+      description: View Service
+      responses:
+        200:
+          description: Service
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+          schema:
+            $ref: "#/definitions/service_view"
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        404:
+          description: Resource Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+
+    delete:
+      x-visibility: private
+      tags: [services]
+      operationId: retireService
+      summary: Retire Service
+      description: Retire Service
+      parameters:
+        - name: "X-Tenant-Id"
+          description: Unique identifier for tenant
+          in: header
+          required: true
+          type: string
+          format: uuid
+      responses:
+        204:
+          description: Service Retired
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        404:
+          description: Resource Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        409:
+          description: Conflict
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+
+    patch:
+      x-visibility: private
+      tags: [services]
+      operationId: updateService
+      summary: Update Service
+      description: Update Service
+      consumes:
+        - application/vnd.cia.v1+json
+      parameters:
+        - name: "X-Tenant-Id"
+          description: Unique identifier for tenant
+          in: header
+          required: true
+          type: string
+          format: uuid
+        - name: service
+          description: body of Service
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/service_partial"
+      responses:
+        204:
+          description: Service
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        404:
+          description: Resource Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        409:
+          description: Conflict
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        422:
+          description: Unprocessable Entity
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+
+  /services/{serviceId}/calculations:
+    x-visibility: private
+    parameters:
+      - name: serviceId
+        description: Unique identifier for Service
+        in: path
+        required: true
+        type: string
+        format: uuid
+      - name: "X-Request-Id"
+        in: "header"
+        description: Unique identifer associated with request
+        required: true
+        type: string
+        format: uuid
+    post:
+      tags: [services]
+      operationId: calculateCost
+      summary: Calculate Estimated Cost for a Service
+      description: Calculate Estimated Cost for a Service
+      consumes:
+        - application/vnd.cia.v1+json
+      parameters:
+        - name: serviceQuota
+          description: body of service quota
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/service_quota"
+      responses:
+        200:
+          description: Total Estimated Cost Calculated
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+          schema:
+            $ref: "#/definitions/service_cost"
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        404:
+          description: Resource Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+
+  /services/{serviceId}/units:
+    parameters:
+      - name: serviceId
+        description: Unique identifier for Service
+        in: path
+        required: true
+        type: string
+        format: uuid
+      - name: "X-Request-Id"
+        in: "header"
+        description: Unique identifer associated with request
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags: [services]
+      operationId: searchUnits
+      summary: Search for Service Units
+      description: |
+        To apply filter criteria use the following approach:
+
+        `?<field><operator><value>`
+
+        Example: `?name=Test`
+
+      parameters:
+        - name: name
+          in: query
+          description: Search records by name
+          required: false
+          type: string
+          minLength: 3
+        - name: type
+          in: query
+          description: Search records by type
+          required: false
+          type: string
+          minLength: 3
+        - name: period
+          in: query
+          description: Search records by cost period
+          required: false
+          type: string
+          enum: [FLAT, HOURLY, MONTHLY]
+        - name: active_date
+          in: query
+          description: Search records valid between activated_at (inclusive) and deactivated_at (exclusive)
+          required: false
+          type: string
+          format: date
+        - name: fields
+          in: query
+          description: Filters the fields in each returned record. (comma-delimited)
+          required: false
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        - name: limit
+          in: query
+          description: Max number of records to return.
+          required: false
+          type: integer
+          minimum: 0
+        - name: offset
+          in: query
+          description: Segment of records to return incremented by limit.
+          required: false
+          type: integer
+          minimum: 0
+        - name: sort
+          in: query
+          description: Sort by fields that determines the order of the results. (comma-delimited)
+          required: false
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            pattern: '([-\+]\w+)'
+      responses:
+        200:
+          description: List of Service Units
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+            # Link:
+            #   description: Links that help with paging of results (i.e. next, previous, first, last)
+            #   type: string
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/unit_view"
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        404:
+          description: Resource Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+
+    post:
+      x-visibility: private
+      tags: [services]
+      operationId: addUnit
+      summary: Add Service Unit
+      description: Add Service Unit
+      consumes:
+        - application/vnd.cia.v1+json
+      parameters:
+        - name: "X-Tenant-Id"
+          description: Unique identifier for tenant
+          in: header
+          required: true
+          type: string
+          format: uuid
+        - name: unit
+          description: body of service unit
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/unit"
+      responses:
+        201:
+          description: Service Unit Added
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+            Location:
+              description: URL to the newly added Service Unit
+              type: string
+              format: url
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        404:
+          description: Resource Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        409:
+          description: Conflict
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        422:
+          description: Unprocessable Entity Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+
+  /services/{serviceId}/units/{unitId}:
+    parameters:
+      - name: serviceId
+        description: Unique identifier for Service
+        in: path
+        required: true
+        type: string
+        format: uuid
+      - name: unitId
+        description: Unique identifier for Service Unit
+        in: path
+        required: true
+        type: string
+        format: uuid
+      - name: "X-Request-Id"
+        in: "header"
+        description: Unique identifer associated with request
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags: [services]
+      operationId: viewUnit
+      summary: View Service Unit
+      description: View Service Unit
+      responses:
+        200:
+          description: Service Unit
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+          schema:
+            $ref: "#/definitions/unit_view"
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        404:
+          description: Resource Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+
+    delete:
+      x-visibility: private
+      tags: [services]
+      operationId: retireUnit
+      summary: Retire Service Unit
+      description: Retire Service Unit
+      parameters:
+        - name: "X-Tenant-Id"
+          description: Unique identifier for tenant
+          in: header
+          required: true
+          type: string
+          format: uuid
+      responses:
+        204:
+          description: Service Unit Retired
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        404:
+          description: Resource Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+
+    patch:
+      x-visibility: private
+      tags: [services]
+      operationId: updateUnit
+      summary: Update Service Unit
+      description: Update Service Unit
+      consumes:
+        - application/vnd.cia.v1+json
+      parameters:
+        - name: "X-Tenant-Id"
+          description: Unique identifier for tenant
+          in: header
+          required: true
+          type: string
+          format: uuid
+        - name: unit
+          description: partial body of service unit
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/unit_partial"
+      responses:
+        204:
+          description: Service Unit Updated
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        404:
+          description: Resource Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        409:
+          description: Conflict
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        422:
+          description: Unprocessable Entity Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+
+definitions:
+
+  service:
+    x-visibility: private
+    title: Service
+    description: An orderable Service defined in Service Catalog.
+    type: object
+    required:
+      - name
+      - version
+      - location
+    properties:
+      id:
+        title: Service Identifier
+        description: unique identifier for the service
+        type: string
+        format: uuid
+        readOnly: true
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      name:
+        title: Service Name
+        description: name for the service
+        type: string
+        minLength: 3
+        example: OpenStack Service
+      version:
+        title: Service Version
+        description: labeled variant of the service
+        type: string
+        minLength: 1
+        example: Newton
+      owner:
+        title: Service Owner
+        description: entity that owns (provides) the service
+        type: string
+        format: uuid
+        readOnly: true
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      location:
+        title: Service Location
+        description: location of the service
+        minLength: 3
+        type: string
+        example: ALLN
+      region:
+        title: Service Region
+        description: region of the service
+        type: string
+        example: US-EAST
+      status:
+        title: Service Status
+        description: status of the service
+        type: string
+        enum: [CREATING, ACTIVE, UPDATING, DELETING, INACTIVE, DELETED, FAILED]
+        readOnly: true
+        example: ACTIVE
+      tags:
+        title: Service Tags
+        description: tags to identify service properties
+        type: array
+        items:
+          type: string
+        uniqueItems: true
+        x-omitempty: true
+        example: [LA, ALPHA]
+      metadata:
+        title: Service Metadata
+        description: metadata of the service
+        type: object
+        additionalProperties:
+          type: string
+      audit:
+        $ref: "#/definitions/audit"
+
+  service_view:
+    title: Service View
+    description: An orderable Service defined in Service Catalog.
+    type: object
+    properties:
+      id:
+        title: Service Identifier
+        description: unique identifier for the service
+        type: string
+        format: uuid
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      name:
+        title: Service Name
+        description: name for the service
+        type: string
+        example: OpenStack Service
+      version:
+        title: Service Version
+        description: labeled variant of the service
+        type: string
+        example: Newton
+      owner:
+        title: Service Owner
+        description: entity that owns (provides) the service
+        type: string
+        format: uuid
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      location:
+        title: Service Location
+        description: location of the service
+        type: string
+        example: ALLN
+      region:
+        title: Service Region
+        description: region of the service
+        type: string
+        example: US-EAST
+      status:
+        title: Service Status
+        description: status of the service
+        type: string
+        enum: [CREATING, ACTIVE, UPDATING, DELETING, INACTIVE, DELETED, FAILED]
+        example: ACTIVE
+      tags:
+        title: Service Tags
+        description: tags to identify service properties
+        type: array
+        items:
+          type: string
+        x-omitempty: true
+        example: [LA, ALPHA]
+      metadata:
+        title: Service Metadata
+        description: metadata of the service
+        type: object
+        additionalProperties:
+          type: string
+      audit:
+        $ref: "#/definitions/audit"
+
+  service_partial:
+    x-visibility: private
+    title: Service Partial
+    description: An orderable Service defined in Service Catalog.
+    type: object
+    properties:
+      tags:
+        title: Service Tags
+        description: tags to identify service properties
+        type: array
+        items:
+          type: string
+        uniqueItems: true
+        x-omitempty: true
+        example: [LA, ALPHA]
+      metadata:
+        title: Service Metadata
+        description: metadata of the service
+        type: object
+        additionalProperties:
+          type: string
+
+  service_quota:
+    x-visibility: private
+    title: Service Quota
+    description: Service for which the cost has to be calculated based on the quota
+    type: object
+    required:
+      - plan
+      - units
+    properties:
+      plan:
+        title: Payment Plan
+        description: The payment plan for the service
+        type: string
+        minLength: 3
+        example: free
+      units:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/definitions/allocated_unit'
+
+  allocated_unit:
+    x-visibility: private
+    title: Units used in the service
+    description: Units used in the service
+    type: object
+    required:
+      - name
+      - type
+      - quantity
+    properties:
+      name:
+        title: Service Unit Name
+        description: name for the service unit
+        type: string
+        example: instances
+      type:
+        title: Service Unit Type
+        description: type of the service unit
+        type: string
+        example: compute
+      quantity:
+        title: Service Unit Quantity
+        description: quantity defined for the service unit during allocation of the recource
+        type: number
+        format: double
+        minimum: 1.00
+        example: 10.00
+
+  service_cost:
+    x-visibility: private
+    title: Service Cost
+    description: Estimated cost for the service
+    type: object
+    properties:
+      total_cost:
+        title: Total Cost
+        description: total cost for the service
+        type: number
+        format: double
+        example: 0.02
+
+  unit:
+    x-visibility: private
+    title: Service Unit
+    description: A Service Unit for the Location defined in Service Catalog.
+    type: object
+    required:
+      - name
+      - type
+      - cost
+    properties:
+      id:
+        title: Service Unit Identifier
+        description: unique identifier for the service unit
+        type: string
+        format: uuid
+        readOnly: true
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      name:
+        title: Service Unit Name
+        description: name for the service unit
+        type: string
+        example: Example Service Unit
+      type:
+        title: Service Unit Type
+        description: type of the service unit
+        type: string
+        example: VCPU
+      description:
+        title: Service Unit Description
+        description: summary describing the service unit
+        type: string
+        example: Long description about the service unit
+      cost:
+        title: Service Unit Cost
+        description: cost for the service unit
+        type: number
+        format: double
+        minimum: 0.0
+        example: 0.02
+      period:
+        title: Service Unit Cost Period
+        description: cost period for the service unit
+        type: string
+        enum: [FLAT, HOURLY, MONTHLY]
+        example: HOURLY
+      quotas:
+        title: Service Unit Quotas
+        description: quotas defined for the service unit
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/quota'
+      activated_at:
+        title: Service Unit Cost Activatation Date
+        description: >
+            The begin date of the billing period from which the service unit cost is effective in ISO Date format of
+            "YYYY-MM-DD". The DD portion will be ignored and always set to 01.
+        type: string
+        format: date
+        example: 2018-02-01
+      audit:
+        $ref: "#/definitions/audit"
+
+  unit_view:
+    title: Service Unit View
+    description: A Service Unit for the Location defined in Service Catalog.
+    type: object
+    properties:
+      id:
+        title: Service Unit Identifier
+        description: unique identifier for the service unit
+        type: string
+        format: uuid
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      name:
+        title: Service Unit Name
+        description: name for the service unit
+        type: string
+        example: Example Service Unit
+      type:
+        title: Service Unit Type
+        description: type of the service unit
+        type: string
+        example: VCPU
+      description:
+        title: Service Unit Description
+        description: summary describing the service unit
+        type: string
+        example: Long description about the service unit
+      cost:
+        title: Service Unit Cost
+        description: cost for the service unit
+        type: number
+        format: double
+        example: 0.02
+      period:
+        title: Service Unit Cost Period
+        description: cost period for the service unit
+        type: string
+        enum: [FLAT, HOURLY, MONTHLY]
+        example: HOURLY
+      quotas:
+        title: Service Unit Quotas
+        description: quotas defined for the service unit
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/quota'
+      activated_at:
+         title: Service Unit Cost Activatation Timestamp
+         description: >
+             service unit activation date (inclusive) as YYYY-MM-DD with respect to the billing period
+             always as the start of the billing period
+         type: string
+         example: 2018-02-01
+      deactivated_at:
+         title: Service Unit Cost Deactivation Timestamp
+         description: >
+             service unit deactivation date (exclusive) as YYYY-MM-DD with respect to the billing period
+             - omitted if empty or the end of the billing period
+         type: string
+         example: 2018-03-01
+      audit:
+        $ref: "#/definitions/audit"
+
+  unit_partial:
+    x-visibility: private
+    title: Service Unit Partial
+    description: A Service Unit for the Location defined in Service Catalog.
+    type: object
+    properties:
+      description:
+        title: Service Unit Description
+        description: summary describing the service unit
+        type: string
+        example: Long description about the service unit
+      cost:
+        title: Service Unit Cost
+        description: cost for the service unit
+        type: number
+        format: double
+        minimum: 0.0
+        example: 0.02
+      period:
+        title: Service Unit Cost Period
+        description: cost period for the service unit
+        type: string
+        enum: [FLAT, HOURLY, MONTHLY]
+        example: HOURLY
+      quotas:
+        title: Service Unit Quotas
+        description: quotas defined for the service unit
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/quota'
+
+  quota:
+     title: Service Unit Quota
+     description: quota details with values
+     type: object
+     properties:
+       min:
+         title: Minimum quota value
+         type: number
+         format: double
+         minimum: 0.0
+         example: 1.0
+       max:
+         title: Maximum quota value
+         type: number
+         format: double
+         minimum: 0.0
+         example: 1.0
+       default:
+         title: Default quota value
+         type: number
+         format: double
+         minimum: 0.0
+         example: 1.0
+
+  audit:
+    title: Audit
+    description: Audit trail details
+    type: object
+    properties:
+      created_at:
+        title: Created At
+        description: timestamp when the record was created
+        type: string
+        format: date-time
+        readOnly: true
+      created_by:
+        title: Created By
+        description: entity that created the record
+        type: string
+        readOnly: true
+      updated_at:
+        title: Updated At
+        description: timestamp when the record was updated
+        type: string
+        format: date-time
+        readOnly: true
+      updated_by:
+        title: Updated By
+        description: entity that updated the record
+        type: string
+        readOnly: true
+
+  user:
+    x-visibility: private
+    type: object
+    title: User Structure
+    description: |
+      A User is the authenticated person performing actions.
+    required:
+      - name
+    properties:
+      name:
+        title: login name
+        description: human readable identifier
+        type: string
+      display:
+        title: display name
+        description: formal name used when greeting a person
+        type: string
+      token:
+        title: authentication token
+        description: token used during authentication
+        type: string
+

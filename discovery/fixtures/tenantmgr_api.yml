@@ -1,0 +1,2174 @@
+swagger: '2.0'
+info:
+  version: "0.0.0"
+  title: MCMP - Tenants Manager
+
+schemes:
+  - http
+
+produces:
+  - application/vnd.cia.v1+json
+
+tags:
+  - name: tenant
+  - name: servicegroup
+  - name: resource
+
+securityDefinitions:
+  token:
+    type: apiKey
+    name: WAMAUTH
+    in: header
+
+security:
+  - token: []
+
+basePath: /v1
+
+paths:
+  /tenants:
+    parameters:
+      - name: X-Request-Id
+        description: Unique identifer associated with request
+        in: header
+        required: true
+        type: string
+        format: uuid
+
+    get:
+      tags: [tenant]
+      operationId: listTenants
+      summary: List all Tenants matching search criteria
+      description: |
+        List tenants is a search, to apply filter criteria use the following approach:
+
+        `?<field><operator><value>`
+
+        Example: `?name=Test`
+
+      parameters:
+        - name: fields
+          in: query
+          description: Filters the fields in each returned record. (comma-delimited)
+          required: false
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        - name: limit
+          in: query
+          description: Max number of records to return.
+          required: false
+          type: integer
+          minimum: 0
+        - name: offset
+          in: query
+          description: Segment of records to return incremented by limit.
+          required: false
+          type: integer
+          minimum: 0
+        - name: sort
+          in: query
+          description: Sort by fields that determines the order of the results. (comma-delimited)
+          required: false
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            pattern: '([-\+]\w+)'
+      responses:
+        200:
+          description: List all Tenants matching search criteria
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/tenant_view"
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+
+    post:
+      tags: [tenant]
+      operationId: addTenant
+      summary: Add Tenant
+      description: Add Tenant
+      consumes:
+        - application/vnd.cia.v1+json
+      parameters:
+        - name: tenant
+          description: body of tenant
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/tenant"
+      responses:
+        201:
+          description: Tenant Added
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+            Location:
+              description: URL to the newly added Tenant
+              type: string
+              format: url
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        409:
+          description: Conflict
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+
+  /tenants/{tenantId}:
+    parameters:
+      - name: tenantId
+        description: Unique identifier for Tenant
+        in: path
+        required: true
+        type: string
+        format: uuid
+      - name: X-Request-Id
+        in: header
+        description: Unique identifer associated with request
+        required: true
+        type: string
+        format: uuid
+      - name: X-Tenant-Id
+        in: header
+        description: Unique identifer associated with tenant
+        required: true
+        type: string
+        format: uuid
+
+    get:
+      tags: [tenant]
+      operationId: viewTenant
+      summary: View Tenant
+      description: View Tenant
+      responses:
+        200:
+          description: Tenant
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+          schema:
+            $ref: "#/definitions/tenant"
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        404:
+          description: Tenant Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+
+    delete:
+      tags: [tenant]
+      operationId: deleteTenant
+      summary: Delete Tenant
+      description: Delete tenant after checking whether id is present or not.
+      responses:
+        204:
+          description: Tenant Deleted
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        404:
+          description: Tenant Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        409:
+          description: Conflict
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+
+    patch:
+      tags: [tenant]
+      operationId: updateTenant
+      summary: Update Tenant
+      description: Update Tenant
+      consumes:
+        - application/vnd.cia.v1+json
+      parameters:
+        - name: tenant
+          description: body of tenant
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/partial_tenant"
+      responses:
+        204:
+          description: Tenant
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        404:
+          description: Tenant Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        409:
+          description: Conflict
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        422:
+          description: Unprocessable Entity Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+
+  /tenants/{tenantId}/funds:
+    parameters:
+      - name: tenantId
+        description: Unique identifier for Tenant
+        in: path
+        required: true
+        type: string
+        format: uuid
+      - name: X-Tenant-Id
+        description: Unique identifier for Tenant
+        in: header
+        required: true
+        type: string
+        format: uuid
+      - name: X-Request-Id
+        description: Unique identifer associated with request
+        in: header
+        required: true
+        type: string
+        format: uuid
+
+    post:
+      tags: [tenant]
+      operationId: addFunding
+      summary: Add Funding
+      description: Add Funding (Central, Dept Cross-charge)
+      consumes:
+        - application/vnd.cia.v1+json
+      parameters:
+        - name: funding
+          description: body of funding
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/funding"
+      responses:
+          201:
+            description: Funding Added
+            headers:
+              X-Request-Id:
+                description: Unique identifer associated with request
+                type: string
+                format: uuid
+              Location:
+                description: URL to the newly added Funding
+                type: string
+                format: url
+          400:
+            description: Invalid Request Error
+            headers:
+              X-Request-Id:
+                description: Unique identifer associated with request
+                type: string
+                format: uuid
+          401:
+            description: Authentication Failure
+            headers:
+              X-Request-Id:
+                description: Unique identifer associated with request
+                type: string
+                format: uuid
+          403:
+            description: Authorization Failure
+            headers:
+              X-Request-Id:
+                description: Unique identifer associated with request
+                type: string
+                format: uuid
+          404:
+            description: Resource Not Found
+            headers:
+              X-Request-Id:
+                description: Unique identifer associated with request
+                type: string
+                format: uuid
+          409:
+            description: Conflict
+            headers:
+              X-Request-Id:
+                description: Unique identifer associated with request
+                type: string
+                format: uuid
+          default:
+            description: Default Response
+            headers:
+              X-Request-Id:
+                description: Unique identifer associated with request
+                type: string
+                format: uuid
+
+    get:
+      tags: [tenant]
+      operationId: getFundings
+      summary: Get list of tenant fundings matching search query
+      description: |
+        To apply filter criteria use the following approach:
+
+        `?<field><operator><value>`
+
+        Example: `?name=Test`
+
+      parameters:
+        - name: status
+          in: query
+          description: Search records by status
+          required: false
+          type: string
+          enum: [NEW, PENDINGAPPROVAL, ACTIVE]
+        - name: type
+          in: query
+          description: Search records by funding type
+          required: false
+          type: string
+          enum: [central-it, department]
+        - name: bill_to_department
+          in: query
+          description: Search records by bill to department
+          required: false
+          type: string
+          minLength: 3
+        - name: financial_analyst
+          in: query
+          description: Search records by financial analyst
+          required: false
+          type: string
+          minLength: 3
+        - name: available
+          in: query
+          description: Get available funds
+          required: false
+          type: boolean
+        - name: fields
+          in: query
+          description: Filters the fields in each returned record. (comma-delimited)
+          required: false
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        - name: limit
+          in: query
+          description: Max number of records to return.
+          required: false
+          type: integer
+          minimum: 0
+        - name: offset
+          in: query
+          description: Segment of records to return incremented by limit.
+          required: false
+          type: integer
+          minimum: 0
+        - name: sort
+          in: query
+          description: Sort by fields that determines the order of the results. (comma-delimited)
+          required: false
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            pattern: '([-\+]\w+)'
+      responses:
+        200:
+          description: List of tenant fundings
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/funding_view"
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        404:
+          description: Resource Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+
+  /tenants/{tenantId}/funds/{fundId}:
+    parameters:
+      - name: X-Request-Id
+        description: Unique identifier associated with request
+        in: header
+        required: true
+        type: string
+        format: uuid
+      - name: X-Tenant-Id
+        in: header
+        description: Unique identifer associated with tenant
+        required: true
+        type: string
+        format: uuid
+      - name: tenantId
+        description: Unique identifier for Tenant
+        in: path
+        required: true
+        type: string
+        format: uuid
+      - name: fundId
+        description: Unique identifier for Resource
+        in: path
+        required: true
+        type: string
+        format: uuid
+
+    get:
+      tags: [tenant]
+      operationId: viewFund
+      summary: View Fund
+      description: View Fund
+      responses:
+        200:
+          description: Fund
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+          schema:
+            $ref: "#/definitions/funding"
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        404:
+          description: Fund Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+
+    delete:
+      tags: [tenant]
+      operationId: deleteFund
+      summary: Delete Fund
+      description: Delete fund after checking whether id is present or not.
+      responses:
+        204:
+          description: Fund Deleted
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        404:
+          description: Fund Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        409:
+          description: Fund Delete Not Allowed
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+
+    patch:
+      tags: [tenant]
+      operationId: updateFund
+      summary: Update Fund
+      description: Update Fund
+      consumes:
+        - application/vnd.cia.v1+json
+      parameters:
+        - name: fund
+          description: partial body of fund
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/funding_partial"
+      responses:
+        204:
+          description: Fund
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        404:
+          description: Tenant or Fund Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        409:
+          description: Fund Update Not Allowed
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        422:
+          description: Unprocessable Entity Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+
+  /tenants/{tenantId}/servicegroups:
+    parameters:
+      - name: tenantId
+        description: Unique identifier for Tenant
+        in: path
+        required: true
+        type: string
+        format: uuid
+      - name: X-Request-Id
+        in: header
+        description: Unique identifer associated with request
+        required: true
+        type: string
+        format: uuid
+      - name: X-Tenant-Id
+        in: header
+        description: Unique identifer associated with tenant
+        required: true
+        type: string
+        format: uuid
+
+    get:
+      tags: [tenant]
+      operationId: getServiceGroups
+      summary: Search for Service Groups
+      description: |
+        To apply filter criteria use the following approach:
+
+        `?<field><operator><value>`
+
+        Example: `?name=Test`
+
+      parameters:
+        - name: fields
+          in: query
+          description: Filters the fields in each returned record. (comma-delimited)
+          required: false
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        - name: limit
+          in: query
+          description: Max number of records to return.
+          required: false
+          type: integer
+          minimum: 0
+        - name: offset
+          in: query
+          description: Segment of records to return incremented by limit.
+          required: false
+          type: integer
+          minimum: 0
+        - name: sort
+          in: query
+          description: Sort by fields that determines the order of the results. (comma-delimited)
+          required: false
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            pattern: '([-\+]\w+)'
+      responses:
+        200:
+          description: List of Service Groups
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+            # Link:
+            #   description: Links that help with paging of results (i.e. next, previous, first, last)
+            #   type: string
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/service_group_view"
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        404:
+          description: Tenant Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+
+    post:
+      tags: [tenant]
+      operationId: addServiceGroup
+      summary: Add Service Group
+      description: Add Service Group
+      consumes:
+        - application/vnd.cia.v1+json
+      parameters:
+        - name: service group
+          description: body of service group
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/service_group"
+      responses:
+        201:
+          description: Service Group Added
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+            Location:
+              description: URL to the newly added Service Unit
+              type: string
+              format: url
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        404:
+          description: Tenant Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        409:
+          description: Conflict
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+
+  /servicegroups/{serviceGroupId}:
+    parameters:
+      - name: serviceGroupId
+        description: Unique identifier for Service Unit
+        in: path
+        required: true
+        type: string
+        format: uuid
+      - name: X-Tenant-Id
+        in: header
+        description: Unique identifer associated with tenant
+        required: true
+        type: string
+        format: uuid
+      - name: "X-SG-Id"
+        in: "header"
+        description: Unique identifier associated with Service Group
+        required: true
+        type: string
+        format: uuid
+      - name: X-Request-Id
+        in: header
+        description: Unique identifer associated with request
+        required: true
+        type: string
+        format: uuid
+
+    get:
+      tags: [servicegroup]
+      operationId: viewServiceGroup
+      summary: View Service Group
+      description: View Service Group
+      responses:
+        200:
+          description: Service Group
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+          schema:
+            $ref: "#/definitions/service_group"
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        404:
+          description: Resource Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+
+    delete:
+      tags: [servicegroup]
+      operationId: deleteServiceGroup
+      summary: Delete Service Group
+      description: Delete Service Group
+      responses:
+        204:
+          description: Service Group Deleted
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        404:
+          description: Resource Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        409:
+          description: Conflict
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+
+    patch:
+      tags: [servicegroup]
+      operationId: updateServiceGroup
+      summary: Update Service Group
+      description: Update Service Group
+      consumes:
+        - application/vnd.cia.v1+json
+      parameters:
+        - name: service group
+          description: partial body of service group
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/service_group_partial"
+      responses:
+        204:
+          description: Service Group Updated
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        404:
+          description: Resource Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        409:
+          description: Conflict
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        422:
+          description: Unprocessable Entity Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+
+  /servicegroups/{servicegroupId}/resources:
+    parameters:
+      - name: X-Request-Id
+        description: Unique identifier associated with request
+        in: header
+        required: true
+        type: string
+        format: uuid
+      - name: X-Tenant-Id
+        in: header
+        description: Unique identifer associated with tenant
+        required: true
+        type: string
+        format: uuid
+      - name: "X-SG-Id"
+        in: "header"
+        description: Unique identifier associated with Service Group
+        required: true
+        type: string
+        format: uuid
+      - name: servicegroupId
+        description: Unique identifier for Service Group
+        in: path
+        required: true
+        type: string
+        format: uuid
+
+    get:
+      tags: [servicegroup]
+      operationId: getResources
+      summary: Get list of tenant resources matching search query
+      description: |
+        To apply filter criteria use the following approach:
+
+        `?<field><operator><value>`
+
+        Example: `?name=Test`
+
+      parameters:
+        - name: fields
+          in: query
+          description: Filters the fields in each returned record. (comma-delimited)
+          required: false
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        - name: limit
+          in: query
+          description: Max number of records to return.
+          required: false
+          type: integer
+          minimum: 0
+        - name: offset
+          in: query
+          description: Segment of records to return incremented by limit.
+          required: false
+          type: integer
+          minimum: 0
+        - name: sort
+          in: query
+          description: Sort by fields that determines the order of the results. (comma-delimited)
+          required: false
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            pattern: '([-\+]\w+)'
+      responses:
+        200:
+          description: List of tenant resources
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+            # Link:
+            #   description: Links that help with paging of results (i.e. next, previous, first, last)
+            #   type: string
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/resource_view"
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        404:
+          description: Resource Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+
+    post:
+      x-visibility: private
+      tags: [servicegroup]
+      operationId: addResource
+      summary: Add Resource
+      description: Add Resource
+      consumes:
+        - application/vnd.cia.v1+json
+      parameters:
+        - name: resource
+          description: body of resource
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/resource"
+      responses:
+          201:
+            description: Resource Added
+            headers:
+              X-Request-Id:
+                description: Unique identifer associated with request
+                type: string
+                format: uuid
+              Location:
+                description: URL to the newly added Resource
+                type: string
+                format: url
+          400:
+            description: Invalid Request Error
+            headers:
+              X-Request-Id:
+                description: Unique identifer associated with request
+                type: string
+                format: uuid
+          401:
+            description: Authentication Failure
+            headers:
+              X-Request-Id:
+                description: Unique identifer associated with request
+                type: string
+                format: uuid
+          402:
+            description: Insufficient Funds
+            headers:
+              X-Request-Id:
+                description: Unique identifer associated with request
+                type: string
+                format: uuid
+          403:
+            description: Authorization Failure
+            headers:
+              X-Request-Id:
+                description: Unique identifer associated with request
+                type: string
+                format: uuid
+          404:
+            description: Tenant Not Found
+            headers:
+              X-Request-Id:
+                description: Unique identifer associated with request
+                type: string
+                format: uuid
+          409:
+            description: Conflict
+            headers:
+              X-Request-Id:
+                description: Unique identifer associated with request
+                type: string
+                format: uuid
+          default:
+            description: Default Response
+            headers:
+              X-Request-Id:
+                description: Unique identifer associated with request
+                type: string
+                format: uuid
+
+  /servicegroups/{servicegroupId}/resources/{resourceId}:
+    parameters:
+      - name: X-Request-Id
+        description: Unique identifier associated with request
+        in: header
+        required: true
+        type: string
+        format: uuid
+      - name: X-Tenant-Id
+        in: header
+        description: Unique identifer associated with tenant
+        required: true
+        type: string
+        format: uuid
+      - name: "X-SG-Id"
+        in: "header"
+        description: Unique identifier associated with Service Group
+        required: true
+        type: string
+        format: uuid
+      - name: servicegroupId
+        description: Unique identifier for Service Group
+        in: path
+        required: true
+        type: string
+        format: uuid
+      - name: resourceId
+        description: Unique identifier for Resource
+        in: path
+        required: true
+        type: string
+        format: uuid
+
+    get:
+      tags: [servicegroup]
+      operationId: viewResource
+      summary: View Resource
+      description: View Resource
+      responses:
+        200:
+          description: Resource
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+          schema:
+            $ref: "#/definitions/resource_view"
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        404:
+          description: Resource Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+
+    delete:
+      x-visibility: private
+      tags: [servicegroup]
+      operationId: deleteResource
+      summary: Delete Resource
+      description: Delete resource after checking whether resource id and tenant id is present or not, and if status it active or not.
+      responses:
+        204:
+          description: Resource Deleted
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        400:
+          description: Invalid Request Error
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        401:
+          description: Authentication Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        403:
+          description: Authorization Failure
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        404:
+          description: Resource Not Found
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        409:
+          description: Conflict
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+        default:
+          description: Default Response
+          headers:
+            X-Request-Id:
+              description: Unique identifer associated with request
+              type: string
+              format: uuid
+
+  /resources:
+      x-visibility: private
+      parameters:
+      - name: X-Request-Id
+        description: Unique identifier associated with request
+        in: header
+        required: true
+        type: string
+        format: uuid
+      get:
+        tags: [resource]
+        operationId: getResourceHierarchy
+        summary: Get list of resource hierarchy matching search query
+        security: []
+        parameters:
+          - name: external_id
+            in: query
+            description: The external id of CSP for resource
+            required: true
+            type: string
+          - name: service_name
+            in: query
+            description: The name of CSP the resource belongs to
+            required: true
+            type: string
+          - name: service_version
+            in: query
+            description: The version of the resource
+            required: false
+            type: string
+          - name: service_location
+            in: query
+            description: The location of the resource
+            required: false
+            type: string
+        responses:
+          200:
+            description: List of resource hierarchy
+            headers:
+              X-Request-Id:
+                description: Unique identifier associated with request
+                type: string
+                format: uuid
+            schema:
+              type: array
+              items:
+                $ref: "#/definitions/resource_hierarchy"
+          default:
+            description: Default Response
+            headers:
+              X-Request-Id:
+                description: Unique identifier associated with request
+                type: string
+                format: uuid
+
+definitions:
+  tenant:
+    title: Tenant
+    description: The responsible party for the associated resources.
+    type: object
+    required:
+      - name
+      - admins
+    properties:
+      id:
+        title: Tenant Identifier
+        description: unique identifier for the tenant
+        type: string
+        format: uuid
+        readOnly: true
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      name:
+        title: Tenant Name
+        description: name for the tenant
+        type: string
+        minLength: 3
+        example: Example Tenant
+      admins:
+        title: Admins
+        description: list of admins
+        type: array
+        items:
+          type: string
+        example: ['mcmp-admin']
+      csp:
+        title: Cloud Service Provider
+        description: Is Cloud Service Provider
+        type: boolean
+        default: false
+        readOnly: true
+      status:
+        title: Tenant Status
+        description: status for the tenant
+        type: string
+        enum: [ACTIVE, DELETED]
+        readOnly: true
+        example: ACTIVE
+      audit:
+        $ref: "#/definitions/audit"
+      service_portfolio:
+        $ref: "#/definitions/service_portfolio"
+
+  tenant_view:
+    title: Tenant View
+    description: The responsible party for the associated resources.
+    type: object
+    properties:
+      id:
+        title: Tenant Identifier
+        description: unique identifier for the tenant
+        type: string
+        format: uuid
+        readOnly: true
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      name:
+        title: Tenant Name
+        description: name for the tenant
+        type: string
+        minLength: 3
+        example: Example Tenant
+      csp:
+        title: Cloud Service Provider
+        description: Is Cloud Service Provider
+        type: boolean
+        default: false
+        readOnly: true
+      status:
+        title: Tenant Status
+        description: status for the tenant
+        type: string
+        enum: [ACTIVE, DELETED]
+        example: ACTIVE
+      audit:
+        $ref: "#/definitions/audit"
+      service_portfolio:
+        $ref: "#/definitions/service_portfolio"
+
+  resource_hierarchy:
+    x-visibility: private
+    title: Resource Hierarchy
+    description: The responsible party for the associated resource hierachy.
+    allOf:
+    - $ref: '#/definitions/tenant_view'
+    - type: object
+      properties:
+        serviceGroups:
+          type: array
+          items:
+            $ref: '#/definitions/service_group_hierarchy'
+        funds:
+          type: array
+          items:
+            $ref: '#/definitions/funding_view'
+
+  service_group_hierarchy:
+    x-visibility: private
+    title: ServiceGroup Hierarchy
+    description: The responsible party for the associated servicegroup hierachy.
+    allOf:
+    - $ref: '#/definitions/service_group_view'
+    - type: object
+      properties:
+        resources:
+          type: array
+          items:
+            $ref: '#/definitions/resource_view'
+
+  partial_tenant:
+    title: Update Tenant
+    description: The ability to update a tenant
+    type: object
+    properties:
+      name:
+        title: Tenant Name
+        description: name for the tenant
+        type: string
+        minLength: 3
+        example: Example Tenant
+      service_portfolio:
+        $ref: "#/definitions/service_portfolio"
+
+  service_group:
+    title: Service Group
+    description: The logical grouping of resources.
+    type: object
+    required:
+      - name
+    properties:
+      id:
+        title: Service Group Identifier
+        description: unique identifier for the service group
+        type: string
+        format: uuid
+        readOnly: true
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      name:
+        title: Service Group Name
+        description: name for the service group
+        type: string
+        minLength: 3
+        example: Example Service Group
+      epicid:
+        title: EPIC id associated with the service group
+        description: EPIC Id (Program ID) for the service group
+        type: string
+        example: PR10101
+      status:
+        title: Service Group Status
+        description: status for the service group
+        type: string
+        enum: [ACTIVE, DELETED]
+        readOnly: true
+        example: ACTIVE
+      audit:
+        $ref: "#/definitions/audit"
+      application_portfolio:
+        $ref: "#/definitions/application_portfolio"
+
+  service_group_view:
+    title: Service Group View
+    description: The logical grouping of resources.
+    type: object
+    properties:
+      id:
+        title: Service Group Identifier
+        description: unique identifier for the service group
+        type: string
+        format: uuid
+        readOnly: true
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      name:
+        title: Service Group Name
+        description: name for the service group
+        type: string
+        minLength: 3
+        example: Example Service Group
+      epicid:
+        title: EPIC id associated with the service group
+        description: EPIC Id (Program ID) for the service group
+        type: string
+        example: PR10101
+      status:
+        title: Service Group Status
+        description: status for the service group
+        type: string
+        enum: [ACTIVE, DELETED]
+        example: ACTIVE
+      audit:
+        $ref: "#/definitions/audit"
+      application_portfolio:
+        $ref: "#/definitions/application_portfolio"
+
+  service_group_partial:
+    title: Service Group
+    description: The logical grouping of resources.
+    type: object
+    properties:
+      name:
+        title: Service Group Name
+        description: name for the service group
+        type: string
+        example: Example Service Group
+      epicid:
+        title: EPIC id associated with the service group
+        description: EPIC Id (Program ID) for the service group
+        type: string
+        example: PR10101
+      application_portfolio:
+        $ref: "#/definitions/application_portfolio"
+
+  resource:
+    x-visibility: private
+    title: Resource
+    description: A resource provided to a tenant.
+    type: object
+    required:
+      - id
+      - tenant_id
+      - service_group_id
+      - name
+      - service_name
+      - service_version
+      - service_location
+      - service_region
+      - cost
+    properties:
+      id:
+        title: Resource Identifier
+        description: unique identifier for the resource
+        type: string
+        format: uuid
+        example: 4477f6e7-ee55-4639-bc54-32786fde2the
+      tenant_id:
+        title: Tenant Identifier
+        description: unique identifier for the tenant
+        type: string
+        format: uuid
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      service_group_id:
+        title: Service Group Identifier
+        description: unique identifier for the Service Group
+        type: string
+        format: uuid
+        example: 4677f6e7-dd55-4639-bc54-65646fde2adc
+      status:
+        title: Resource Status
+        description: status for the resource
+        type: string
+        enum: [NEW, ACTIVE, FAILED, DELETED]
+        readOnly: true
+        example: ACTIVE
+      name:
+        title: Resource Name
+        description: name of the underlying resource
+        type: string
+        example: Example Resource
+      service_name:
+        title: Resource Type
+        description: type of the underlying resource
+        type: string
+        example: Openstack Project
+      service_version:
+        title: Service Version
+        description: version identifier for the service
+        type: string
+        example: 0.0.1
+      service_location:
+        title: Service Location
+        description: location of the service
+        type: string
+        example: AZ01
+      service_region:
+        title: Service Region
+        description: region service is located in
+        type: string
+        example: Region1
+      cost:
+        title: Resource Cost
+        description: Cost of a resource
+        type: number
+        format: double
+        example: 10.64
+      tags:
+        title: Tags
+        description: Tags associated with the resource
+        type: array
+        items:
+          type: string
+        example: ['foo', 'bar']
+      metadata:
+        title: Metadata
+        description: Metadata associated with the resource
+        type: object
+        additionalProperties:
+          type: string
+      audit:
+        $ref: "#/definitions/audit"
+
+  resource_view:
+    title: Resource View
+    description: View of resources
+    type: object
+    properties:
+      id:
+        title: Resource Identifier
+        description: unique identifier for the resource
+        type: string
+        format: uuid
+        readOnly: true
+        example: 4477f6e7-ee55-4639-bc54-32786fde2the
+      tenant_id:
+        title: Tenant Identifier
+        description: unique identifier for the tenant
+        type: string
+        format: uuid
+        readOnly: true
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      service_group_id:
+        title: Service Group Identifier
+        description: unique identifier for the Service Group
+        type: string
+        format: uuid
+        readOnly: true
+        example: 4677f6e7-dd55-4639-bc54-65646fde2adc
+      status:
+        title: Resource Status
+        description: status for the resource
+        type: string
+        enum: [NEW, ACTIVE, FAILED, DELETED]
+        example: ACTIVE
+      name:
+        title: Resource Name
+        description: name of the underlying resource
+        type: string
+        example: Example Resource
+      service_name:
+        title: Resource Type
+        description: type of the underlying resource
+        type: string
+        example: Openstack Project
+      service_version:
+        title: Service Version
+        description: version identifier for the service
+        type: string
+        example: 0.0.1
+      service_location:
+        title: Service Location
+        description: location of the service
+        type: string
+        example: AZ01
+      service_region:
+        title: Service Region
+        description: region service is located in
+        type: string
+        example: Region1
+      cost:
+        title: Resource Cost
+        description: Cost of a resource
+        type: number
+        format: double
+        example: 10.64
+      tags:
+        title: Tags
+        description: Tags associated with the resource
+        type: array
+        items:
+          type: string
+        example: ['foo', 'bar']
+      audit:
+        $ref: "#/definitions/audit"
+      metadata:
+        title: Metadata
+        description: Metadata associated with the resource
+        type: object
+        additionalProperties:
+          type: string
+
+  resource_partial:
+    x-visibility: private
+    title: Resource View Partial
+    description: Partial body of resources for update
+    type: object
+    required:
+      - id
+      - tenant_id
+      - service_group_id
+    properties:
+      id:
+        title: Resource Identifier
+        description: unique identifier for the resource
+        type: string
+        format: uuid
+        example: 4477f6e7-ee55-4639-bc54-32786fde2the
+      tenant_id:
+        title: Tenant Identifier
+        description: unique identifier for the tenant
+        type: string
+        format: uuid
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      service_group_id:
+        title: Service Group Identifier
+        description: unique identifier for the Service Group
+        type: string
+        format: uuid
+        example: 4677f6e7-dd55-4639-bc54-65646fde2adc
+      status:
+        title: Resource Status
+        description: status for the resource
+        type: string
+        enum: [NEW, ACTIVE, FAILED, DELETED]
+        example: ACTIVE
+      name:
+        title: Resource Name
+        description: name of the underlying resource
+        type: string
+        example: Example Resource
+      service_version:
+        title: Service Version
+        description: version identifier for the service
+        type: string
+        example: 0.0.1
+      service_location:
+        title: Service Location
+        description: location of the service
+        type: string
+        example: AZ01
+      tags:
+        title: Tags
+        description: Tags associated with the resource
+        type: array
+        items:
+          type: string
+        example: ['foo', 'bar']
+      metadata:
+        title: Metadata
+        description: Metadata associated with the resource
+        type: object
+        additionalProperties:
+          type: string
+
+  funding:
+    title: Funding
+    description: Funding (Central/ department cross-charge)
+    type: object
+    required:
+    - amount
+    - type
+    properties:
+      id:
+        title: Funding Identifier
+        description: unique identifier for the funding
+        type: string
+        format: uuid
+        readOnly: true
+        example: 4477f6e7-ee55-4639-bc54-32786fde2the
+      status:
+        title: Funding Status
+        description: status for the resource
+        type: string
+        enum: [NEW, PENDINGAPPROVAL, ACTIVE, DELETED]
+        readOnly: true
+        example: ACTIVE
+      audit:
+        $ref: "#/definitions/audit"
+      type:
+        title: Funding Type
+        description: Type for the funding
+        type: string
+        enum: [central-it, department]
+        example: central-it
+      amount:
+        title:  Available Amount
+        description: Available amount
+        type: integer
+        example: 10000
+      cross_charge_funds:
+        $ref: "#/definitions/cross_charge_funds"
+
+  funding_view:
+    title: Funding View
+    description: Funding (Central/ department cross-charge)
+    type: object
+    properties:
+      id:
+        title: Resource Identifier
+        description: unique identifier for the resource
+        type: string
+        format: uuid
+        readOnly: true
+        example: 4477f6e7-ee55-4639-bc54-32786fde2the
+      status:
+        title: Funding Status
+        description: status for the resource
+        type: string
+        enum: [NEW, PENDINGAPPROVAL, ACTIVE, FAILED, DELETED]
+        readOnly: true
+        example: ACTIVE
+      audit:
+        $ref: "#/definitions/audit"
+      type:
+        title: Funding Type
+        description: Type for the funding
+        type: string
+        enum: [central-it, department]
+        example: ACTIVE
+      amount:
+        title:  Funding Amount
+        description: Funding amount
+        type: integer
+        example: 10000
+      available:
+        title:  Available Amount
+        description: Available amount
+        format: double
+        example: 100.64
+      cross_charge_funds:
+        $ref: "#/definitions/cross_charge_funds"
+
+  funding_partial:
+    title: Partial Funding View
+    description: Partial body of funding
+    type: object
+    properties:
+      amount:
+        title:  Funding Amount
+        description: Funding amount
+        type: integer
+        minimum: 0
+        example: 10000
+      financial_analyst:
+        title: financial Analyst
+        description: financial Analyst for this funding
+        type: string
+        example: rkucheka
+
+  cross_charge_funds:
+    title: Cross Charge Funding
+    description: Department Cross Charge Funding
+    type: object
+    properties:
+      financial_analyst:
+        title: financial Analyst
+        description: financial Analyst for this funding
+        type: string
+        example: rkucheka
+      bill_to_department:
+        title: Bill To Department Id
+        description: Bill To Department Id for this funding
+        type: string
+        example: 020073256
+
+  audit:
+    title: Audit
+    description: Audit trail details
+    type: object
+    properties:
+      created_at:
+        title: Created At
+        description: timestamp when the record was created
+        type: string
+        format: date-time
+        readOnly: true
+      updated_at:
+        title: Updated At
+        description: timestamp when the record was last updated
+        type: string
+        format: date-time
+        readOnly: true
+
+  user:
+    x-visibility: private
+    type: object
+    title: User Structure
+    description: |
+      A User is the authenticated person performing actions.
+    required:
+      - name
+    properties:
+      name:
+        title: login name
+        description: human readable identifier
+        type: string
+      display:
+        title: display name
+        description: formal name used when greeting a person
+        type: string
+      token:
+        title: authentication token
+        description: token used during authentication
+        type: string
+
+  service_portfolio:
+    title: Service Portfolio
+    description: MCMP Tenant to Service Portfolio mapping (in ESP)
+    type: object
+    properties:
+      service_id:
+        title: Service ID
+        description: Service ID in ESP
+        type: string
+        readOnly: true
+      service_name:
+        title: Service Name
+        description: Service Name in ESP
+        type: string
+
+  application_portfolio:
+    title: Application Portfolio
+    description: MCMP Tenant to Application Portfolio mapping (in ESP)
+    type: object
+    properties:
+      business_application_id:
+        title: Business Application ID
+        description: Business Application ID in ESP
+        type: string
+        readOnly: true
+      business_application_name:
+        title: Business Application Name
+        description: Business Application Name in ESP
+        type: string
+      application_instance_id:
+        title: Application Instance ID
+        description: Application Instance ID in ESP
+        type: string
+        readOnly: true
+      application_instance_name:
+        title: Application Instance Name
+        description: Application Instance Name in ESP
+        type: string
