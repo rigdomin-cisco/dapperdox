@@ -34,7 +34,7 @@ func NewRouterChain() http.Handler {
 		timeoutHandler,
 		withCsrf,
 		injectHeaders,
-		handlers.CORS(),
+		handlers.CORS(handlers.AllowedOrigins(viper.GetStringSlice(config.AllowOrigin))),
 	)
 
 	specs.Register(router)

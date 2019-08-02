@@ -20,6 +20,7 @@ const (
 	SiteURL            = "site-url"
 	ProxyPath          = "proxy.path"
 	DocumentRewriteURL = "document.rewrite.url"
+	AllowOrigin        = "allow.origin"
 
 	// assets
 	DefaultAssetsDir = "default-assets-dir"
@@ -71,6 +72,8 @@ func init() {
 	pflag.StringSlice(SpecFilename, []string{}, "The filename of the OpenAPI specification file within the spec-dir. May be multiply defined.")
 	pflag.Bool(ForceSpecList, false,
 		"Force the homepage to be the summary list of available specifications. The default when serving a single OpenAPI specification is to make the homepage the API summary.")
+
+	viper.SetDefault(AllowOrigin, []string{"*"})
 
 	viper.SetDefault(SpecFilename, []string{"/swagger.json"})
 	viper.SetDefault(SpecDefaultHost, "127.0.0.1")
