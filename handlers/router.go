@@ -34,6 +34,7 @@ func NewRouterChain() http.Handler {
 		timeoutHandler,
 		withCsrf,
 		injectHeaders,
+		handlers.CORS(),
 	)
 
 	specs.Register(router)
