@@ -35,7 +35,7 @@ endif
 
 ## Clean the directory tree of produced artifacts.
 clean: .ci-clean prepare
-	@${DOCKERRUN} bash -c 'rm -rf bin build release cover vendor.orig *.out *.xml'
+	@${DOCKERRUN} bash -c 'rm -rf bin build release cover vendor.orig .vendor-new *.out *.xml'
 
 ## Same as clean but also removes cached dependencies.
 veryclean: clean
@@ -150,3 +150,12 @@ todo: prepare
 # example: make adhoc RUNTHIS='which jq'
 adhoc: prepare
 	@${DOCKERRUN} ${RUNTHIS}
+
+## Build deployable docker image.
+build-image:
+	docker build -t "${IMAGE_NAME}" --build-arg VERSION="${VERSION}" .
+	docker tag "${IMAGE_NAME}" "${IMAGE_NAME}:${VERSION}"
+
+## Push tagged docker images to registry.
+pub-image:
+	docker push "${IMAGE_NAME}:${VERSION}"
