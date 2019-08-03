@@ -598,40 +598,11 @@ func (c *APISpecification) processMethod(api *APIGroup, pathItem *spec.PathItem,
 		c.ResourceList = make(map[string]map[string]*Resource)
 	}
 
-	for _, param := range o.Parameters {
-		p := Parameter{
-			Name:        param.Name,
-			In:          param.In,
-			Description: string(formatter.Markdown([]byte(param.Description))),
-			Required:    param.Required,
-		}
-		p.setType(param)
-		p.setEnums(param)
+	c.processParameters(pathItem.Parameters, method, version)
 
-		switch strings.ToLower(param.In) {
-		case "formdata":
-			method.FormParams = append(method.FormParams, p)
-		case "path":
-			method.PathParams = append(method.PathParams, p)
-		case "body":
-			if param.Schema == nil {
-				log().Panicf("Error: 'in body' parameter %s is missing a schema declaration.", param.Name)
-			}
-			var body map[string]interface{}
-			p.Resource, body, p.IsArray = c.resourceFromSchema(param.Schema, method, nil, true)
-			p.Resource.Schema = jsonResourceToString(body, p.IsArray)
-			p.Resource.origin = RequestBody
-			method.BodyParam = &p
-			c.crossLinkMethodAndResource(p.Resource, method, version)
-		case "header":
-			method.HeaderParams = append(method.HeaderParams, p)
-		case "query":
-			method.QueryParams = append(method.QueryParams, p)
-		}
-	}
+	c.processParameters(o.Parameters, method, version)
 
 	// Compile resources from response declaration
-
 	if o.Responses == nil {
 		log().Panicf("Error: Operation %s %s is missing a responses declaration.", methodname, path)
 	}
@@ -665,6 +636,40 @@ func (c *APISpecification) processMethod(api *APIGroup, pathItem *spec.PathItem,
 	}
 
 	return method
+}
+
+func (c *APISpecification) processParameters(params []spec.Parameter, method *Method, version string) {
+	for _, param := range params {
+		p := Parameter{
+			Name:        param.Name,
+			In:          param.In,
+			Description: string(formatter.Markdown([]byte(param.Description))),
+			Required:    param.Required,
+		}
+		p.setType(param)
+		p.setEnums(param)
+
+		switch strings.ToLower(param.In) {
+		case "formdata":
+			method.FormParams = append(method.FormParams, p)
+		case "path":
+			method.PathParams = append(method.PathParams, p)
+		case "body":
+			if param.Schema == nil {
+				log().Panicf("Error: 'in body' parameter %s is missing a schema declaration.", param.Name)
+			}
+			var body map[string]interface{}
+			p.Resource, body, p.IsArray = c.resourceFromSchema(param.Schema, method, nil, true)
+			p.Resource.Schema = jsonResourceToString(body, p.IsArray)
+			p.Resource.origin = RequestBody
+			method.BodyParam = &p
+			c.crossLinkMethodAndResource(p.Resource, method, version)
+		case "header":
+			method.HeaderParams = append(method.HeaderParams, p)
+		case "query":
+			method.QueryParams = append(method.QueryParams, p)
+		}
+	}
 }
 
 func (c *APISpecification) buildResponse(resp *spec.Response, method *Method, version string) *Response {
