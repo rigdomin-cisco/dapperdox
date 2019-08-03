@@ -86,6 +86,7 @@ func new() *render.Render {
 		// The default theme underpins all others
 		asset.Compile(filepath.Join(viper.GetString(config.DefaultAssetsDir), "themes", "default"), "assets")
 	}
+	compileSections(viper.GetString(config.DefaultAssetsDir))
 
 	// Fallback to local templates directory
 	asset.Compile(filepath.Join(viper.GetString(config.DefaultAssetsDir), "templates"), "assets/templates")
