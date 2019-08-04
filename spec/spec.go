@@ -40,14 +40,16 @@ import (
 )
 
 const (
-	arrayType        = "array"
-	visibilityExt    = "x-visibility"
+	arrayType = "array"
+
+	excludeOpExt     = "x-excludeFromOperations"
 	navMethodNameExt = "x-navigateMethodsByName"
-	sortMethodsByExt = "x-sortMethodsBy"
-	versionExt       = "x-version"
 	opNameExt        = "x-operationName"
 	pathNameExt      = "x-pathName"
-	excludeOpExt     = "x-excludeFromOperations"
+	sortMethodsByExt = "x-sortMethodsBy"
+	groupByExt       = "x-groupby"
+	versionExt       = "x-version"
+	visibilityExt    = "x-visibility"
 )
 
 // all defined ResourceOrigin
@@ -77,12 +79,16 @@ var sortTypes = map[string]bool{
 // APISuite holds multiple apis held by name
 var APISuite map[string]*APISpecification
 
+// APISuiteGroups holds multiple apis sorted by groups
+var APISuiteGroups map[string][]*APISpecification
+
 // APISpecification holds the content of a parsed api
 type APISpecification struct {
 	ID      string
 	APIs    APISet // APIs represents the parsed APIs
 	APIInfo Info
 	URL     string
+	GroupBy string
 
 	SecurityDefinitions map[string]SecurityScheme
 	DefaultSecurity     map[string]Security
@@ -241,6 +247,7 @@ func LoadSpecifications() error {
 
 	if APISuite == nil {
 		APISuite = make(map[string]*APISpecification)
+		APISuiteGroups = make(map[string][]*APISpecification)
 	}
 
 	log().Infof("configured spec filenames: %v", viper.GetStringSlice(config.SpecFilename))
@@ -259,6 +266,10 @@ func LoadSpecifications() error {
 		}
 
 		APISuite[specification.ID] = specification
+		if _, exists := APISuiteGroups[specification.GroupBy]; !exists {
+			APISuiteGroups[specification.GroupBy] = make([]*APISpecification, 0)
+		}
+		APISuiteGroups[specification.GroupBy] = append(APISuiteGroups[specification.GroupBy], specification)
 	}
 
 	return nil
@@ -313,6 +324,11 @@ func (c *APISpecification) load(specLocation string) error {
 
 	c.getSecurityDefinitions(apispec)
 	c.getDefaultSecurity(apispec)
+
+	c.GroupBy = "default"
+	if groupBy, ok := apispec.Extensions[groupByExt].(string); ok {
+		c.GroupBy = groupBy
+	}
 
 	// Should methods in the navigation be presented by type (GET, POST) or name (string)?
 	methodNavByName := false

@@ -54,6 +54,10 @@
   name = "github.com/justinas/nosurf"
 
 [[constraint]]
+  name = "github.com/Masterminds/sprig"
+  version = "2.20.0"
+
+[[constraint]]
   name = "github.com/microcosm-cc/bluemonday"
   version = "1.0.2"
 

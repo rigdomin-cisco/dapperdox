@@ -30,6 +30,7 @@ func DefaultVars(req *http.Request, s *spec.APISpecification, m Vars) map[string
 
 	m["Config"] = config.C
 	m["APISuite"] = spec.APISuite
+	m["APISuiteGroups"] = spec.APISuiteGroups
 
 	// If we have a multiple specifications or are forcing a parent "root" page for the single specification
 	// then set MultipleSpecs to true to enable navigation back to the root page.

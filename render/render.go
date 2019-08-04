@@ -28,6 +28,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Masterminds/sprig"
 	"github.com/ian-kent/htmlform"
 	"github.com/spf13/viper"
 	"github.com/unrolled/render"
@@ -115,7 +116,9 @@ func new() *render.Render {
 			"haveTemplate":  TemplateLookup,
 			"overlay":       func(n string, d ...interface{}) template.HTML { return overlayFunc(n, d) },
 			"getAssetPaths": func(s string, d ...interface{}) []string { return getAssetPaths(s, d) },
-		}},
+		},
+			sprig.HtmlFuncMap(),
+		},
 	})
 }
 
