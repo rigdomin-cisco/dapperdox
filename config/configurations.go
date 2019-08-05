@@ -48,7 +48,7 @@ var defaultConfigPaths = []string{
 var C config
 
 type config struct {
-	ShowAssets bool `mapstructure:"ShowAssets"`
+	ShowAssets bool `mapstructure:"author-show-assets"`
 }
 
 func init() {
