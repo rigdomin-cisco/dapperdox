@@ -43,7 +43,6 @@ func Register(r *mux.Router) {
 
 	// Loop for all APISpecification's in the APISuite
 	for _, specification := range spec.APISuite {
-
 		specID := "/" + specification.ID
 
 		log().Debugf("Registering reference for OpenAPI specification %q", specification.APIInfo.Title)
@@ -135,7 +134,6 @@ func getAPIVersions(api spec.APIGroup) []string {
 // apiHandler is a http.Handler for rendering API reference docs
 func apiHandler(specification *spec.APISpecification, api spec.APIGroup) func(w http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-
 		version := req.FormValue("v") // Get the resource version
 		if version == "" {
 			version = api.CurrentVersion
@@ -167,7 +165,6 @@ func apiHandler(specification *spec.APISpecification, api spec.APIGroup) func(w 
 // methodHandler is a http.Handler for rendering API method reference docs
 func methodHandler(specification *spec.APISpecification, api spec.APIGroup, path string) func(w http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-
 		version := req.FormValue("v") // Get the resource version
 		if version == "" {
 			version = api.CurrentVersion
@@ -202,7 +199,6 @@ func methodHandler(specification *spec.APISpecification, api spec.APIGroup, path
 // globalResourceHandler is a http.Handler for rendering API resource reference docs
 func globalResourceHandler(specification *spec.APISpecification, path string) func(w http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-
 		version := req.FormValue("v") // Get the resource version - blank is the latest
 		if version == "" {
 			version = "latest"

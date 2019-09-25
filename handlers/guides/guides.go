@@ -35,7 +35,6 @@ import (
 
 // Register routes for guide pages
 func Register(r *mux.Router) {
-
 	log().Info("Registering guides")
 
 	// specification specific guides
@@ -50,7 +49,6 @@ func Register(r *mux.Router) {
 }
 
 func register(r *mux.Router, base string, specification *spec.APISpecification) {
-
 	rootNode := "/guides"
 	routeBase := "/guides"
 	if specification != nil {
@@ -128,7 +126,6 @@ func findFirstGuideURI(tree *navigation.Node) string {
 }
 
 func sortNavigation(tree *navigation.Node) {
-
 	for i := range tree.Children {
 		node := tree.Children[i]
 
@@ -145,7 +142,6 @@ func stripBasepathAndExtension(name, basepath string) string {
 }
 
 func buildNavigation(nav *navigation.Node, path, pathBase, route, ext string) {
-
 	log().Tracef("      - Look for metadata asset %s", path)
 
 	// See if guide has been marked up with navigation metadata...
@@ -177,7 +173,6 @@ func buildNavigation(nav *navigation.Node, path, pathBase, route, ext string) {
 
 	// Build tree for this navigation item
 	for i := range split {
-
 		name := split[i]
 		id := strings.ReplaceAll(strings.ToLower(name), " ", "-")
 		id = strings.ReplaceAll(id, ".", "-")

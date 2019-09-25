@@ -78,7 +78,6 @@ func MetaData(filename, name string) string {
 
 // Compile specs
 func Compile(dir, prefix string) {
-
 	// Build a replacer to search/replace Document URLs in the documents.
 	if guideReplacer == nil {
 		var replacements []string
@@ -138,7 +137,6 @@ func Compile(dir, prefix string) {
 
 			// This resource may be metadata tagged as a page section overlay..
 			if overlay, ok := meta["overlay"]; ok && strings.EqualFold(overlay, "true") {
-
 				// Chop markdown into sections
 				sections, headings := splitOnSection(string(buf))
 
@@ -174,7 +172,6 @@ func Compile(dir, prefix string) {
 }
 
 func storeTemplate(prefix, name, template string, meta map[string]string) {
-
 	newname := filepath.ToSlash(filepath.Join(prefix, name))
 
 	if _, ok := _bindata[newname]; !ok {
@@ -190,7 +187,6 @@ func storeTemplate(prefix, name, template string, meta map[string]string) {
 
 // processMarkdown Returns rendered markdown
 func processMarkdown(doc []byte) []byte {
-
 	html := formatter.Markdown(doc)
 	// Apply any HTML substitutions
 	for _, rep := range gfmReplace {
@@ -201,7 +197,6 @@ func processMarkdown(doc []byte) []byte {
 
 // processMetadata Strips and processed metadata from markdown document
 func processMetadata(doc []byte) ([]byte, map[string]string) {
-
 	// Inspect the markdown src doc to see if it contains metadata
 	scanner := bufio.NewScanner(bytes.NewReader(doc))
 	scanner.Split(bufio.ScanLines)
@@ -239,7 +234,6 @@ func processMetadata(doc []byte) ([]byte, map[string]string) {
 }
 
 func splitOnSection(text string) ([]string, []string) {
-
 	indexes := sectionSplitRegex.FindAllStringIndex(text, -1)
 
 	if indexes == nil {
@@ -251,7 +245,6 @@ func splitOnSection(text string) ([]string, []string) {
 	headings := make([]string, len(indexes))
 
 	for i, element := range indexes {
-
 		if i > 0 {
 			sections[i-1] = text[last:element[0]]
 		}
@@ -267,7 +260,6 @@ func splitOnSection(text string) ([]string, []string) {
 
 // CompileGFMMap github markdown
 func CompileGFMMap() {
-
 	var mapfile string
 
 	if viper.GetString(config.AssetsDir) != "" {

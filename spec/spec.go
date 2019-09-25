@@ -241,7 +241,6 @@ func (a SortMethods) Less(i, j int) bool { return a[i].SortKey < a[j].SortKey }
 
 // LoadSpecifications loads the provided api specifications
 func LoadSpecifications() error {
-
 	loadStatusCodes()
 	loadReplacer()
 
@@ -276,7 +275,6 @@ func LoadSpecifications() error {
 }
 
 func (c *APISpecification) load(specLocation string) error {
-
 	document, err := loadSpec(normalizeSpecLocation(specLocation))
 	if err != nil {
 		return err
@@ -453,7 +451,6 @@ func (c *APISpecification) load(specLocation string) error {
 }
 
 func (c *APISpecification) getMethods(tag spec.Tag, api *APIGroup, methods *[]Method, pi *spec.PathItem, path, version string) {
-
 	c.getMethod(tag, api, methods, version, pi, pi.Get, path, "get")
 	c.getMethod(tag, api, methods, version, pi, pi.Post, path, "post")
 	c.getMethod(tag, api, methods, version, pi, pi.Put, path, "put")
@@ -497,7 +494,6 @@ func (c *APISpecification) getMethod(tag spec.Tag, api *APIGroup, methods *[]Met
 }
 
 func (c *APISpecification) getSecurityDefinitions(s *spec.Swagger) {
-
 	if c.SecurityDefinitions == nil {
 		c.SecurityDefinitions = make(map[string]SecurityScheme)
 	}
@@ -539,7 +535,6 @@ func (c *APISpecification) getDefaultSecurity(s *spec.Swagger) {
 }
 
 func (c *APISpecification) processMethod(api *APIGroup, pathItem *spec.PathItem, o *spec.Operation, path, methodname, version string) *Method {
-
 	var opname string
 	var gotOpname bool
 
@@ -637,7 +632,6 @@ func (c *APISpecification) processMethod(api *APIGroup, pathItem *spec.PathItem,
 		rsp := c.buildResponse(&r, method, version)
 		rsp.StatusDescription = httpStatusDescription(status)
 		method.Responses[status] = *rsp
-
 	}
 
 	if o.Responses.Default != nil {
@@ -719,7 +713,6 @@ func (c *APISpecification) buildResponse(resp *spec.Response, method *Method, ve
 }
 
 func (c *APISpecification) crossLinkMethodAndResource(resource *Resource, method *Method, version string) *Resource {
-
 	log().Tracef("++ Resource version %s  ID %s", version, resource.ID)
 
 	if _, ok := c.ResourceList[version]; !ok {
@@ -769,7 +762,6 @@ func (c *APISpecification) crossLinkMethodAndResource(resource *Resource, method
 }
 
 func (c *APISpecification) processSecurity(s []map[string][]string, security map[string]Security) bool {
-
 	count := 0
 	for _, sec := range s {
 		for n, scopes := range sec {
@@ -975,7 +967,6 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 func (c *APISpecification) compileproperties(s *spec.Schema, r *Resource, method *Method, id string,
 	required map[string]bool, jsonRep map[string]interface{}, myFQNS []string,
 	chopped, isRequestResource bool) {
-
 	// First, grab the required members
 	for _, n := range s.Required {
 		required[n] = true
@@ -999,7 +990,6 @@ func (c *APISpecification) compileproperties(s *spec.Schema, r *Resource, method
 
 func (c *APISpecification) processProperty(s *spec.Schema, name string, r *Resource, method *Method, id string,
 	required map[string]bool, jsonRep map[string]interface{}, myFQNS []string, chopped, isRequestResource bool) {
-
 	newFQNS := prepareNamespace(myFQNS, id, name, chopped)
 
 	var jsonResource map[string]interface{}
@@ -1010,7 +1000,6 @@ func (c *APISpecification) processProperty(s *spec.Schema, name string, r *Resou
 
 	skip := isRequestResource && resource.ReadOnly
 	if !skip && resource.ExcludeFromOperations != nil {
-
 		log().Tracef("Exclude [%s] in operation [%s] if in list: %s", name, method.OperationName, resource.ExcludeFromOperations)
 
 		for _, opname := range resource.ExcludeFromOperations {
@@ -1135,12 +1124,11 @@ func (p *Parameter) setEnums(src spec.Parameter) {
 }
 
 func (r *Response) compileHeaders(sr *spec.Response) {
-
 	if sr.Headers == nil {
 		return
 	}
-	for name, params := range sr.Headers {
 
+	for name, params := range sr.Headers {
 		header := &Header{
 			Description: string(formatter.Markdown([]byte(params.Description))),
 			Name:        name,
@@ -1168,7 +1156,6 @@ func (r *Response) compileHeaders(sr *spec.Response) {
 }
 
 func (api *APIGroup) getMethodSortKey(path, method, operation, navigation, summary string) string {
-
 	// Handle a list of sort-by values, so that ordering can be fixed.
 	// Sorting by path alone does not work because ordering changes around GET/POST/PUT Etc
 	var key string
@@ -1204,7 +1191,6 @@ func getTags(specification *spec.Swagger) []spec.Tag {
 }
 
 func jsonResourceToString(jsonres map[string]interface{}, isArray bool) string {
-
 	// If the resource is an array, then append json object to outer array, else serialize the object.
 	var example []byte
 	if isArray {
@@ -1218,7 +1204,6 @@ func jsonResourceToString(jsonres map[string]interface{}, isArray bool) string {
 }
 
 func checkPropertyType(s *spec.Schema) string {
-
 	/*
 	   (string) (len=12) "string_array": (spec.Schema) {
 	    SchemaProps: (spec.SchemaProps) {
@@ -1243,9 +1228,7 @@ func checkPropertyType(s *spec.Schema) string {
 	sOrig := s.Type
 
 	if s.Items != nil {
-
 		if s.Type.Contains(arrayType) {
-
 			if s.Items.Schema != nil {
 				s = s.Items.Schema
 			} else {
@@ -1271,7 +1254,6 @@ func checkPropertyType(s *spec.Schema) string {
 }
 
 func prepareNamespace(myFQNS []string, id, name string, chopped bool) []string {
-
 	newFQNS := append([]string{}, myFQNS...) // create slice
 
 	if chopped && id != "" {
@@ -1297,7 +1279,6 @@ func camelToKebab(s string) string {
 }
 
 func loadSpec(location string) (*loads.Document, error) {
-
 	log().Infof("Importing OpenAPI specifications from %s", location)
 
 	raw, err := swag.LoadFromFileOrHTTP(location)

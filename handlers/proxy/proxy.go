@@ -53,7 +53,6 @@ func Register(r *mux.Router) {
 }
 
 func register(rtr *mux.Router, routePattern, target string) {
-
 	u, _ := url.Parse(target)
 
 	log().Tracef("+ %s -> %s", routePattern, target)

@@ -156,7 +156,6 @@ func (w htmlWriter) Flush() { _ = w.h.Flush() }
 
 // XXX WHY ARRAY of DATA?
 func overlayFunc(name string, data []interface{}) template.HTML { // TODO Will be specification specific
-
 	if len(data) == 0 || data[0] == nil {
 		log().Debug("Data nil")
 		return ""
@@ -189,7 +188,6 @@ func overlayFunc(name string, data []interface{}) template.HTML { // TODO Will b
 }
 
 func overlayPaths(name string, datamap map[string]interface{}) []string {
-
 	var overlayName []string
 
 	// Use the passed in data structures to determine what type of "page" we are on:
@@ -274,7 +272,6 @@ func getOverlayStems(overlayAsset string) *overlayStems {
 }
 
 func getMethodAssetPaths(overlayAsset string, paths *[]string, datamap map[string]interface{}) {
-
 	method := datamap["Method"].(spec.Method)
 	apiID := method.APIGroup.ID
 
@@ -299,7 +296,6 @@ func getMethodAssetPaths(overlayAsset string, paths *[]string, datamap map[strin
 }
 
 func getAPIAssetPaths(overlayAsset string, paths *[]string, datamap map[string]interface{}) {
-
 	apiID := datamap["API"].(spec.APIGroup).ID
 
 	a := getOverlayStems(overlayAsset)
@@ -315,7 +311,6 @@ func getAPIAssetPaths(overlayAsset string, paths *[]string, datamap map[string]i
 }
 
 func getResourceAssetPaths(overlayAsset string, paths *[]string, datamap map[string]interface{}) {
-
 	resID := datamap["Resource"].(*spec.Resource).ID
 	a := getOverlayStems(overlayAsset)
 
@@ -330,13 +325,11 @@ func getResourceAssetPaths(overlayAsset string, paths *[]string, datamap map[str
 }
 
 func getSpecificationListPaths(overlayAsset string, paths *[]string, _ map[string]interface{}) {
-
 	a := getOverlayStems(overlayAsset)
 	*paths = append(*paths, a.globalStem+"reference/specification_list"+a.asset)
 }
 
 func getSpecificationSummaryPaths(overlayAsset string, paths *[]string, datamap map[string]interface{}) {
-
 	a := getOverlayStems(overlayAsset)
 	if specID, ok := datamap["ID"].(string); ok {
 		*paths = append(*paths, a.specStem+specID+"/templates/reference/specification_summary"+a.asset)

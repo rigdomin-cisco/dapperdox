@@ -150,11 +150,14 @@ linters:
   #   - govet
   enable-all: true
   disable:
+    - funlen
     - gochecknoglobals
     - gochecknoinits
+    - godox
     - gosec
     # - lll
     - scopelint
+    - stylecheck
   # disable-all: false
   # presets:
   #   - bugs

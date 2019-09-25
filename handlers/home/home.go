@@ -38,7 +38,6 @@ func Register(r *mux.Router) {
 	var specification *spec.APISpecification // Ends up being populated with the last spec processed
 
 	for _, specification = range spec.APISuite {
-
 		log().Tracef("Build homepage route for specification %q", specification.ID)
 
 		r.Path("/" + specification.ID + "/reference").Methods(http.MethodGet).HandlerFunc(specificationSummaryHandler(specification))
@@ -68,7 +67,6 @@ func specificationListHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func specificationSummaryHandler(s *spec.APISpecification) func(w http.ResponseWriter, req *http.Request) {
-
 	// The default "theme" level reference index page.
 	tmpl := "specification_summary"
 

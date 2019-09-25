@@ -37,7 +37,6 @@ var specReplacer *strings.Replacer
 
 // Register creates routes for each static resource
 func Register(r *mux.Router) {
-
 	log().Info("Registering specifications")
 
 	if viper.GetString(config.SpecDir) == "" {
@@ -74,7 +73,6 @@ func Register(r *mux.Router) {
 	specMap = make(map[string][]byte)
 
 	_ = filepath.Walk(base, func(path string, _ os.FileInfo, _ error) error {
-
 		if path == base {
 			// Nothing to do with this path
 			return nil
