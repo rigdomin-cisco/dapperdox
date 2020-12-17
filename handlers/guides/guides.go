@@ -33,7 +33,9 @@ import (
 	"github.com/kenjones-cisco/dapperdox/spec"
 )
 
-// Register routes for guide pages
+const maxNavLevels = 2
+
+// Register routes for guide pages.
 func Register(r *mux.Router) {
 	log().Info("Registering guides")
 
@@ -51,6 +53,7 @@ func Register(r *mux.Router) {
 func register(r *mux.Router, base string, specification *spec.APISpecification) {
 	rootNode := "/guides"
 	routeBase := "/guides"
+
 	if specification != nil {
 		rootNode = "/" + specification.ID + "/templates" + rootNode
 		routeBase = "/" + specification.ID + routeBase
@@ -69,6 +72,7 @@ func register(r *mux.Router, base string, specification *spec.APISpecification) 
 		if !strings.HasPrefix(path, pathBase) { // Only keep assets we want
 			continue
 		}
+
 		ext := filepath.Ext(path)
 
 		switch ext {
@@ -89,6 +93,7 @@ func register(r *mux.Router, base string, specification *spec.APISpecification) 
 				if specification != nil {
 					sid = specification.ID
 				}
+
 				log().Tracef("Fetching guide from %q for spec ID %s", resource, sid)
 				render.HTML(w, http.StatusOK, resource, render.DefaultVars(req, specification, render.Vars{"Guide": resource}))
 			})
@@ -110,18 +115,22 @@ func register(r *mux.Router, base string, specification *spec.APISpecification) 
 
 func findFirstGuideURI(tree *navigation.Node) string {
 	var uri string
+
 	for i := range tree.Children {
 		node := tree.Children[i]
 		uri = node.URI
+
 		if uri == "" {
 			if len(node.Children) > 0 {
 				uri = findFirstGuideURI(node)
 			}
 		}
+
 		if uri != "" {
 			break
 		}
 	}
+
 	return uri
 }
 
@@ -133,6 +142,7 @@ func sortNavigation(tree *navigation.Node) {
 			sort.Sort(navigation.ByOrder(node.Children))
 		}
 	}
+
 	sort.Sort(navigation.ByOrder(tree.Children))
 }
 
@@ -160,7 +170,7 @@ func buildNavigation(nav *navigation.Node, path, pathBase, route, ext string) {
 	split := strings.Split(hierarchy, "/")
 	parts := len(split)
 
-	if parts > 2 {
+	if parts > maxNavLevels {
 		log().Panicf("Error: Guide %q contains too many navigation levels (%d)", hierarchy, parts)
 	}
 
@@ -190,14 +200,12 @@ func buildNavigation(nav *navigation.Node, path, pathBase, route, ext string) {
 				}
 				*currentList = append(*currentList, current[id])
 				log().Tracef("      + Adding %s = %s to branch", id, current[id].Name)
-
-				// Update the branch node sort order, if the leaf has a lower sort
-			} else if sortOrder < currentItem.SortOrder {
+			} else if sortOrder < currentItem.SortOrder { // Update the branch node sort order, if the leaf has a lower sort
 				currentItem.SortOrder = sortOrder
 			}
+
 			// Step down branch
 			currentList = &current[id].Children // Get parent list before stepping into child
-
 			current = current[id].ChildMap
 		} else {
 			// Leaf node
@@ -210,7 +218,9 @@ func buildNavigation(nav *navigation.Node, path, pathBase, route, ext string) {
 					ChildMap:  make(map[string]*navigation.Node),
 					Children:  make([]*navigation.Node, 0),
 				}
+
 				*currentList = append(*currentList, current[id])
+
 				log().Tracef("      + Adding %s = %s to leaf node [a] Sort %s", current[id].URI, current[id].Name, sortOrder)
 			} else {
 				// The page is a leaf node, but sits at a branch node. This means that the branch
@@ -219,6 +229,7 @@ func buildNavigation(nav *navigation.Node, path, pathBase, route, ext string) {
 				if sortOrder < currentItem.SortOrder {
 					currentItem.SortOrder = sortOrder
 				}
+
 				log().Tracef("      + Adding %s = %s to leaf node [b] Sort %s", currentItem.URI, currentItem.Name, sortOrder)
 			}
 		}

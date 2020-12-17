@@ -30,7 +30,7 @@ import (
 	"github.com/kenjones-cisco/dapperdox/spec"
 )
 
-// Register creates routes for each home handler
+// Register creates routes for each home handler.
 func Register(r *mux.Router) {
 	log().Debug("registering handlers for home page")
 
@@ -77,6 +77,7 @@ func specificationSummaryHandler(s *spec.APISpecification) func(w http.ResponseW
 	if render.TemplateLookup(customTmpl) != nil {
 		tmpl = customTmpl
 	}
+
 	return func(w http.ResponseWriter, req *http.Request) {
 		render.HTML(w, http.StatusOK, tmpl,
 			render.DefaultVars(req, s, render.Vars{"Title": "Specification summary", "SpecificationSummary": true}))

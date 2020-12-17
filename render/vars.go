@@ -10,21 +10,20 @@ import (
 	"github.com/kenjones-cisco/dapperdox/spec"
 )
 
-var (
-	// Guides are per specification-id, or 'top-level'
-	guides = map[string]GuideType{}
-)
+// Guides are per specification-id, or 'top-level'.
+var guides = map[string]GuideType{}
 
-// GuideType defines an array of Navigation for guides
+// GuideType defines an array of Navigation for guides.
 type GuideType []*navigation.Node
 
-// Vars is a map of variables
+// Vars is a map of variables.
 type Vars map[string]interface{}
 
-// DefaultVars adds the default vars (config, specs, others....) to the data map
+// DefaultVars adds the default vars (config, specs, others....) to the data map.
 func DefaultVars(req *http.Request, s *spec.APISpecification, m Vars) map[string]interface{} {
 	if m == nil {
 		log().Trace("creating new template data map")
+
 		m = make(map[string]interface{})
 	}
 
@@ -59,11 +58,12 @@ func DefaultVars(req *http.Request, s *spec.APISpecification, m Vars) map[string
 	return m
 }
 
-// SetGuidesNavigation adds api to navigation
+// SetGuidesNavigation adds api to navigation.
 func SetGuidesNavigation(s *spec.APISpecification, guidesnav []*navigation.Node) {
 	id := ""
 	if s != nil {
 		id = s.ID
 	}
+
 	guides[id] = guidesnav
 }

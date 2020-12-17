@@ -31,12 +31,12 @@ import (
 	"github.com/kenjones-cisco/dapperdox/render/asset"
 )
 
-// Register creates routes for each static resource
+// Register creates routes for each static resource.
 func Register(r *mux.Router) {
 	log().Debug("registering not found handler in static package")
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		render.HTML(w, http.StatusNotFound, "error", render.DefaultVars(req, nil, map[string]interface{}{"error": "Page not found", "code": 404}))
+		render.HTML(w, http.StatusNotFound, "error", render.DefaultVars(req, nil, map[string]interface{}{"error": "Page not found", "code": http.StatusNotFound}))
 	})
 
 	log().Debug("registering static content handlers for static package")
@@ -73,6 +73,7 @@ func Register(r *mux.Router) {
 					w.Header().Set("Cache-control", "public, max-age=259200")
 					w.WriteHeader(http.StatusOK)
 					_, _ = w.Write(b)
+
 					return
 				}
 				// This should never happen!

@@ -25,6 +25,7 @@ func loadReplacer() {
 				replacements = append(replacements, k, viper.GetString(config.SiteURL))
 			}
 		}
+
 		specReplacer = strings.NewReplacer(replacements...)
 	}
 }

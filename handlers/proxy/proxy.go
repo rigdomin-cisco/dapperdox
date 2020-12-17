@@ -68,6 +68,7 @@ func register(rtr *mux.Router, routePattern, target string) {
 		if r.TLS != nil {
 			scheme = "https://"
 		}
+
 		log().Debugf("Proxy request to: %s%s%s", scheme, r.Host, r.URL.Path)
 	}
 

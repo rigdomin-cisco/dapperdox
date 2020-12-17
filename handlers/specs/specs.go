@@ -32,15 +32,18 @@ import (
 	"github.com/kenjones-cisco/dapperdox/config"
 )
 
-var specMap map[string][]byte
-var specReplacer *strings.Replacer
+var (
+	specMap      map[string][]byte
+	specReplacer *strings.Replacer
+)
 
-// Register creates routes for each static resource
+// Register creates routes for each static resource.
 func Register(r *mux.Router) {
 	log().Info("Registering specifications")
 
 	if viper.GetString(config.SpecDir) == "" {
 		log().Info("- No local specifications to serve")
+
 		return
 	}
 
@@ -58,6 +61,7 @@ func Register(r *mux.Router) {
 				replacements = append(replacements, k, viper.GetString(config.SiteURL))
 			}
 		}
+
 		specReplacer = strings.NewReplacer(replacements...)
 	}
 
@@ -100,6 +104,7 @@ func Register(r *mux.Router) {
 				serveSpec(w, route)
 			})
 		}
+
 		return nil
 	})
 }

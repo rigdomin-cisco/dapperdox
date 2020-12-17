@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// all configuration keys
+// all configuration keys.
 const (
 	cfgDirKey = "config-dir"
 	LogLevel  = "log-level"
@@ -22,16 +22,16 @@ const (
 	DocumentRewriteURL = "document.rewrite.url"
 	AllowOrigin        = "allow.origin"
 
-	// assets
+	// assets.
 	DefaultAssetsDir = "default-assets-dir"
 	AssetsDir        = "assets-dir"
 	ShowAssets       = "author-show-assets"
 
-	// theme
+	// theme.
 	Theme    = "theme"
 	ThemeDir = "theme-dir"
 
-	// spec
+	// spec.
 	SpecDir         = "spec-dir"
 	SpecFilename    = "spec-filename"
 	SpecDefaultHost = "spec.default.host"
@@ -44,7 +44,7 @@ var defaultConfigPaths = []string{
 	"./",
 }
 
-// C holds a reference to struct instance for configurations used within template files
+// C holds a reference to struct instance for configurations used within template files.
 var C config
 
 type config struct {
@@ -73,6 +73,47 @@ func init() {
 	pflag.Bool(ForceSpecList, false,
 		"Force the homepage to be the summary list of available specifications. The default when serving a single OpenAPI specification is to make the homepage the API summary.")
 
+	initialize()
+}
+
+// Init performs the initialization of the configurations via configuration file when found.
+func Init() {
+	viper.SetConfigName("config")
+
+	confDir := viper.GetString(cfgDirKey)
+	if confDir != "" {
+		viper.AddConfigPath(confDir)
+	}
+
+	for _, p := range defaultConfigPaths {
+		viper.AddConfigPath(p)
+	}
+
+	if err := viper.ReadInConfig(); err == nil {
+		fmt.Printf("Using config: %s\n", viper.ConfigFileUsed())
+	}
+
+	if err := viper.Unmarshal(&C); err != nil {
+		panic(err)
+	}
+}
+
+// LoadFixture will load test fixture configuration; for testing only!
+func LoadFixture(dir string) error {
+	viper.SetConfigName("config")
+	viper.AddConfigPath(dir)
+
+	return viper.ReadInConfig()
+}
+
+// Restore will reset viper and re-initialize back to the default configurations
+// For Testing ONLY!
+func Restore() {
+	viper.Reset()
+	initialize()
+}
+
+func initialize() {
 	viper.SetDefault(AllowOrigin, []string{"*"})
 
 	viper.SetDefault(SpecFilename, []string{"/swagger.json"})
@@ -97,25 +138,4 @@ func init() {
 	_ = viper.BindEnv(SpecFilename, "SPEC_FILENAME")
 	_ = viper.BindEnv(SpecDefaultHost, "SPEC_DEFAULT_HOST")
 	_ = viper.BindEnv(ForceSpecList, "FORCE_SPECIFICATION_LIST")
-}
-
-// Init performs the initialization of the configurations via configuration file when found
-func Init() {
-	viper.SetConfigName("config")
-
-	confDir := viper.GetString(cfgDirKey)
-	if confDir != "" {
-		viper.AddConfigPath(confDir)
-	}
-	for _, p := range defaultConfigPaths {
-		viper.AddConfigPath(p)
-	}
-
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Printf("Using config: %s\n", viper.ConfigFileUsed())
-	}
-
-	if err := viper.Unmarshal(&C); err != nil {
-		panic(err)
-	}
 }

@@ -29,15 +29,17 @@ type Node struct {
 	URI       string
 }
 
-// ByOrder implements the Sorter interface for array of Node
+// ByOrder implements the Sorter interface for array of Node.
 type ByOrder []*Node
 
 func (n ByOrder) Len() int {
 	return len(n)
 }
+
 func (n ByOrder) Less(a, b int) bool {
 	return n[a].SortOrder < n[b].SortOrder
 }
+
 func (n ByOrder) Swap(a, b int) {
 	n[a], n[b] = n[b], n[a]
 }

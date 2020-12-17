@@ -1,5 +1,21 @@
 ## To Do
 
+### ``.golangci.yml``
+(line 335) (kenjones): refactor code
+
+(line 338) (kenjones): refactor code
+
+(line 339) (kenjones): refactor code
+
+(line 341) (kenjones): avoid dynamic errors
+
+(line 342) (kenjones): triggers a panic during scan
+
+(line 343) (kenjones): refactor code
+
+(line 346) (kenjones): wrap errors
+
+
 ### ``assets/static/js/explorer.js``
 (line 132) Needs testing
 
@@ -15,25 +31,27 @@
 
 
 ### ``formatter/markdown.go``
-(line 106) : Clean up and improve this code.
+(line 113) : Clean up and improve this code.
 
-(line 241) : Still not completely filtered out.
+(line 270) : Still not completely filtered out.
 
 
 ### ``handlers/reference/reference.go``
-(line 186) default to latest if version not found, or 404 ?
+(line 208) default to latest if version not found, or 404 ?
 
 
 ### ``render/asset/asset.go``
-(line 109) this should be applied to files also.
+(line 116) this should be applied to files also.
 
-(line 223) Make this more efficient!
+(line 232) Make this more efficient!
 
 
 ### ``render/render.go``
-(line 153) Will be specification specific
+(line 160) Will be specification specific
+
+(line 388) : What is the sensible thing to do here?
 
 
 ### ``spec/spec.go``
-(line 638) - Dies if there are no responses...
+(line 646) - Dies if there are no responses...
 

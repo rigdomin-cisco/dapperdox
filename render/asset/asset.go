@@ -40,43 +40,50 @@ import (
 	"github.com/kenjones-cisco/dapperdox/formatter"
 )
 
-var _bindata = map[string][]byte{}
-var _metadata = map[string]map[string]string{}
-var guideReplacer *strings.Replacer
-var gfmReplace []*gfmReplacer
+var (
+	_bindata      = map[string][]byte{}
+	_metadata     = map[string]map[string]string{}
+	guideReplacer *strings.Replacer
+	gfmReplace    []*gfmReplacer
+)
 
-var sectionSplitRegex = regexp.MustCompile(`\[\[[\w\-\/]+\]\]`)
-var gfmMapSplit = regexp.MustCompile(":")
+var (
+	sectionSplitRegex = regexp.MustCompile(`\[\[[\w\-/]+\]\]`)
+	gfmMapSplit       = regexp.MustCompile(":")
+)
 
-// Asset returns asset content
+// Asset returns asset content.
 func Asset(name string) ([]byte, error) {
 	cannonicalName := strings.ReplaceAll(name, "\\", "/")
 	if a, ok := _bindata[cannonicalName]; ok {
 		return a, nil
 	}
+
 	return nil, fmt.Errorf("Asset %s not found", name)
 }
 
-// Names returns all asset names
+// Names returns all asset names.
 func Names() []string {
 	names := make([]string, 0, len(_bindata))
 	for name := range _bindata {
 		names = append(names, name)
 	}
+
 	return names
 }
 
-// MetaData returns file metadata
+// MetaData returns file metadata.
 func MetaData(filename, name string) string {
 	if md, ok := _metadata[filename]; ok {
 		if val, ok := md[strings.ToLower(name)]; ok {
 			return val
 		}
 	}
+
 	return ""
 }
 
-// Compile specs
+// Compile specs.
 func Compile(dir, prefix string) {
 	// Build a replacer to search/replace Document URLs in the documents.
 	if guideReplacer == nil {
@@ -86,6 +93,7 @@ func Compile(dir, prefix string) {
 		for k, v := range viper.GetStringMapString(config.DocumentRewriteURL) {
 			replacements = append(replacements, k, v)
 		}
+
 		guideReplacer = strings.NewReplacer(replacements...)
 	}
 
@@ -110,6 +118,7 @@ func Compile(dir, prefix string) {
 			if node[0] == '.' {
 				return filepath.SkipDir
 			}
+
 			return nil
 		}
 
@@ -178,30 +187,34 @@ func storeTemplate(prefix, name, template string, meta map[string]string) {
 		log().Debugf("  + Import %s", newname)
 		// Store the template, doing and search/replaces on the way
 		_bindata[newname] = []byte(template)
+
 		if len(meta) > 0 {
 			log().Trace("    + Adding metadata")
+
 			_metadata[newname] = meta
 		}
 	}
 }
 
-// processMarkdown Returns rendered markdown
+// processMarkdown Returns rendered markdown.
 func processMarkdown(doc []byte) []byte {
 	html := formatter.Markdown(doc)
 	// Apply any HTML substitutions
 	for _, rep := range gfmReplace {
 		html = rep.Regexp.ReplaceAll(html, rep.Replace)
 	}
+
 	return html
 }
 
-// processMetadata Strips and processed metadata from markdown document
+// processMetadata Strips and processed metadata from markdown document.
 func processMetadata(doc []byte) ([]byte, map[string]string) {
 	// Inspect the markdown src doc to see if it contains metadata
 	scanner := bufio.NewScanner(bytes.NewReader(doc))
 	scanner.Split(bufio.ScanLines)
 
 	var newdoc string
+
 	metaData := make(map[string]string)
 
 	for scanner.Scan() {
@@ -213,11 +226,13 @@ func processMetadata(doc []byte) ([]byte, map[string]string) {
 			if len(line) > 0 { // If the line is not empty, keep the contents
 				newdoc += line + "\n"
 			}
+
 			// Gather up all remainging lines
 			for scanner.Scan() {
 				// TODO Make this more efficient!
 				newdoc += scanner.Text() + "\n"
 			}
+
 			break
 		}
 
@@ -253,39 +268,47 @@ func splitOnSection(text string) ([]string, []string) {
 
 		last = element[1]
 	}
+
 	sections[len(indexes)-1] = text[last:]
 
 	return sections, headings
 }
 
-// CompileGFMMap github markdown
+// CompileGFMMap github markdown.
 func CompileGFMMap() {
 	var mapfile string
 
 	if viper.GetString(config.AssetsDir) != "" {
 		mapfile = filepath.Join(viper.GetString(config.AssetsDir), "gfm.map")
 		log().Tracef("Looking in assets dir for %s", mapfile)
+
 		if _, err := os.Stat(mapfile); os.IsNotExist(err) {
 			mapfile = ""
 		}
 	}
+
 	if mapfile == "" && viper.GetString(config.ThemeDir) != "" {
 		mapfile = filepath.Join(viper.GetString(config.ThemeDir), viper.GetString(config.Theme), "gfm.map")
 		log().Tracef("Looking in theme dir for %s", mapfile)
+
 		if _, err := os.Stat(mapfile); os.IsNotExist(err) {
 			mapfile = ""
 		}
 	}
+
 	if mapfile == "" {
 		mapfile = filepath.Join(viper.GetString(config.DefaultAssetsDir), "themes", viper.GetString(config.Theme), "gfm.map")
 		log().Tracef("Looking in default theme dir for %s", mapfile)
+
 		if _, err := os.Stat(mapfile); os.IsNotExist(err) {
 			mapfile = ""
 		}
 	}
+
 	if mapfile == "" {
 		mapfile = filepath.Join(viper.GetString(config.DefaultAssetsDir), "themes", "default", "gfm.map")
 		log().Tracef("Looking in default theme for %s", mapfile)
+
 		if _, err := os.Stat(mapfile); os.IsNotExist(err) {
 			mapfile = ""
 		}
@@ -293,13 +316,16 @@ func CompileGFMMap() {
 
 	if mapfile == "" {
 		log().Trace("No GFM HTML mapfile found")
+
 		return
 	}
+
 	log().Tracef("Processing GFM HTML mapfile: %s", mapfile)
 
 	file, err := os.Open(mapfile)
 	if err != nil {
 		log().Errorf("Error: %s", err)
+
 		return
 	}
 	defer file.Close()
@@ -331,6 +357,7 @@ func (g *gfmReplacer) Parse(line string) *string {
 	if indexes == nil {
 		return nil
 	}
+
 	g.Regexp = regexp.MustCompile(line[0 : indexes[1]-1])
 	g.Replace = []byte(line[indexes[1]:])
 

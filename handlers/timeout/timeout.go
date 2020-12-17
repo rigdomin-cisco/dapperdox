@@ -40,6 +40,7 @@ func Handler(h http.Handler, dt time.Duration, fh http.Handler) http.Handler {
 	f := func() <-chan time.Time {
 		return time.After(dt)
 	}
+
 	return &handler{h, f, fh}
 }
 
@@ -52,10 +53,12 @@ type handler struct {
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	done := make(chan bool, 1)
 	tw := &writer{w: w}
+
 	go func() {
 		h.handler.ServeHTTP(tw, r)
 		done <- true
 	}()
+
 	select {
 	case <-done:
 		return
@@ -63,10 +66,12 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		tw.mu.Lock()
 		defer tw.mu.Unlock()
 		log().Trace("request timed out")
+
 		if !tw.wroteHeader {
 			log().Trace("headers not written, calling failure handler")
 			h.failHandler.ServeHTTP(w, r)
 		}
+
 		tw.timedOut = true
 	}
 }
@@ -87,18 +92,22 @@ func (tw *writer) Write(p []byte) (int, error) {
 	tw.mu.Lock()
 	defer tw.mu.Unlock()
 	tw.wroteHeader = true // implicitly at least
+
 	if tw.timedOut {
 		return 0, errors.New("http: Handler timeout")
 	}
+
 	return tw.w.Write(p)
 }
 
 func (tw *writer) WriteHeader(code int) {
 	tw.mu.Lock()
 	defer tw.mu.Unlock()
+
 	if tw.timedOut || tw.wroteHeader {
 		return
 	}
+
 	tw.wroteHeader = true
 	tw.w.WriteHeader(code)
 }

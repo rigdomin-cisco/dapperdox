@@ -7,16 +7,19 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var initialize sync.Once
-var _logger logrus.Ext1FieldLogger
+var (
+	initialize sync.Once
+	_logger    logrus.Ext1FieldLogger
+)
 
 // RFC3339NanoFixed is time.RFC3339Nano with nanoseconds padded using zeros to
 // ensure the formatted time is always the same number of characters.
 const RFC3339NanoFixed = "2006-01-02T15:04:05.000000000Z07:00"
 
-// Logger configures a logger instance and returns instance
+// Logger configures a logger instance and returns instance.
 func Logger() logrus.Ext1FieldLogger {
 	l := newLogger()
+
 	return l
 }
 
@@ -60,5 +63,6 @@ func newLogger() logrus.Ext1FieldLogger {
 		stdlog.SetOutput(_logger.(*logrus.Entry).WriterLevel(logrus.DebugLevel))
 		_logger.Debug("Logger initialized")
 	})
+
 	return _logger
 }

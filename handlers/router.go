@@ -25,7 +25,7 @@ import (
 	"github.com/kenjones-cisco/dapperdox/version"
 )
 
-// NewRouterChain creates a router with a chain of middlewares that acts as an http.Handler
+// NewRouterChain creates a router with a chain of middlewares that acts as an http.Handler.
 func NewRouterChain() http.Handler {
 	router := mux.NewRouter()
 	router.Use(
@@ -65,6 +65,7 @@ func withCsrf(h http.Handler) http.Handler {
 		log.Logger().Warnf("failed csrf validation: %s", rsn)
 		render.HTML(w, http.StatusBadRequest, "error", map[string]interface{}{"error": rsn})
 	}))
+
 	return csrfHandler
 }
 

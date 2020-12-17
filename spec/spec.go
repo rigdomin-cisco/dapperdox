@@ -52,7 +52,7 @@ const (
 	visibilityExt    = "x-visibility"
 )
 
-// all defined ResourceOrigin
+// all defined ResourceOrigin.
 const (
 	RequestBody ResourceOrigin = iota
 	MethodResponse
@@ -76,13 +76,13 @@ var sortTypes = map[string]bool{
 	"summary":    true,
 }
 
-// APISuite holds multiple apis held by name
+// APISuite holds multiple apis held by name.
 var APISuite map[string]*APISpecification
 
-// APISuiteGroups holds multiple apis sorted by groups
+// APISuiteGroups holds multiple apis sorted by groups.
 var APISuiteGroups map[string][]*APISpecification
 
-// APISpecification holds the content of a parsed api
+// APISpecification holds the content of a parsed api.
 type APISpecification struct {
 	ID      string
 	APIs    APISet // APIs represents the parsed APIs
@@ -96,10 +96,10 @@ type APISpecification struct {
 	APIVersions         map[string]APISet               // Version->APISet
 }
 
-// APISet list of grouped APIs
+// APISet list of grouped APIs.
 type APISet []APIGroup
 
-// APIGroup parents all grouped API methods (Grouping controlled by tagging, if used, or by method path otherwise)
+// APIGroup parents all grouped API methods (Grouping controlled by tagging, if used, or by method path otherwise).
 type APIGroup struct {
 	ID                     string
 	Name                   string
@@ -114,19 +114,19 @@ type APIGroup struct {
 	Produces               []string
 }
 
-// Info holds display information about API
+// Info holds display information about API.
 type Info struct {
 	Title       string
 	Description string
 }
 
-// Version holds version to list of associated method
+// Version holds version to list of associated method.
 type Version struct {
 	Version string
 	Methods []Method
 }
 
-// OAuth2Scheme is a specific security scheme
+// OAuth2Scheme is a specific security scheme.
 type OAuth2Scheme struct {
 	OAuth2Flow       string
 	AuthorizationURL string
@@ -134,7 +134,7 @@ type OAuth2Scheme struct {
 	Scopes           map[string]string
 }
 
-// SecurityScheme holds the security scheme from a parsed api
+// SecurityScheme holds the security scheme from a parsed api.
 type SecurityScheme struct {
 	IsAPIKey      bool
 	IsBasic       bool
@@ -146,13 +146,13 @@ type SecurityScheme struct {
 	OAuth2Scheme
 }
 
-// Security holds the defined enabled security
+// Security holds the defined enabled security.
 type Security struct {
 	Scheme *SecurityScheme
 	Scopes map[string]string
 }
 
-// Method represents an API method
+// Method represents an API method.
 type Method struct {
 	ID              string
 	Name            string
@@ -176,7 +176,7 @@ type Method struct {
 	SortKey         string
 }
 
-// Parameter represents an API method parameter
+// Parameter represents an API method parameter.
 type Parameter struct {
 	Type                        []string
 	Enum                        []string
@@ -190,7 +190,7 @@ type Parameter struct {
 	IsArray                     bool // "in body" parameter is an array
 }
 
-// Response represents an API method response
+// Response represents an API method response.
 type Response struct {
 	Description       string
 	StatusDescription string
@@ -199,10 +199,10 @@ type Response struct {
 	IsArray           bool
 }
 
-// ResourceOrigin defines different resource origin types
+// ResourceOrigin defines different resource origin types.
 type ResourceOrigin int
 
-// Resource represents an API resource
+// Resource represents an API resource.
 type Resource struct {
 	ID                    string
 	FQNS                  []string
@@ -220,7 +220,7 @@ type Resource struct {
 	origin                ResourceOrigin
 }
 
-// Header represents an API parameter
+// Header represents an API parameter.
 type Header struct {
 	Name                        string
 	Description                 string
@@ -232,14 +232,14 @@ type Header struct {
 	Enum                        []string
 }
 
-// SortMethods implements sortable array of method
+// SortMethods implements sortable array of method.
 type SortMethods []Method
 
 func (a SortMethods) Len() int           { return len(a) }
 func (a SortMethods) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a SortMethods) Less(i, j int) bool { return a[i].SortKey < a[j].SortKey }
 
-// LoadSpecifications loads the provided api specifications
+// LoadSpecifications loads the provided api specifications.
 func LoadSpecifications() error {
 	loadStatusCodes()
 	loadReplacer()
@@ -250,11 +250,14 @@ func LoadSpecifications() error {
 	}
 
 	log().Infof("configured spec filenames: %v", viper.GetStringSlice(config.SpecFilename))
+
 	for _, specLocation := range viper.GetStringSlice(config.SpecFilename) {
 		log().Infof("specLocation: %s", specLocation)
 
-		var ok bool
-		var specification *APISpecification
+		var (
+			ok            bool
+			specification *APISpecification
+		)
 
 		if specification, ok = APISuite[""]; !ok {
 			specification = &APISpecification{}
@@ -265,9 +268,11 @@ func LoadSpecifications() error {
 		}
 
 		APISuite[specification.ID] = specification
+
 		if _, exists := APISuiteGroups[specification.GroupBy]; !exists {
 			APISuiteGroups[specification.GroupBy] = make([]*APISpecification, 0)
 		}
+
 		APISuiteGroups[specification.GroupBy] = append(APISuiteGroups[specification.GroupBy], specification)
 	}
 
@@ -279,6 +284,7 @@ func (c *APISpecification) load(specLocation string) error {
 	if err != nil {
 		return err
 	}
+
 	apispec := document.Spec()
 
 	if isLocalSpecURL(specLocation) && !strings.HasPrefix(specLocation, "/") {
@@ -335,6 +341,7 @@ func (c *APISpecification) load(specLocation string) error {
 	}
 
 	var methodSortBy []string
+
 	if sortByList, ok := apispec.Extensions[sortMethodsByExt].([]interface{}); ok {
 		for _, sortBy := range sortByList {
 			keyname := sortBy.(string)
@@ -352,8 +359,10 @@ func (c *APISpecification) load(specLocation string) error {
 	for _, tag := range getTags(apispec) {
 		log().Trace("  In tag loop...")
 		// Tag matching may not be as expected if multiple paths have the same TAG (which is technically permitted)
-		var ok bool
-		var api *APIGroup
+		var (
+			ok  bool
+			api *APIGroup
+		)
 
 		groupingByTag := false
 		if tag.Name != "" {
@@ -365,6 +374,7 @@ func (c *APISpecification) load(specLocation string) error {
 		if name == "" {
 			name = tag.Name
 		}
+
 		log().Tracef("    - %s", name)
 
 		// If we're grouping by TAGs, then build the API at the tag level
@@ -386,6 +396,7 @@ func (c *APISpecification) load(specLocation string) error {
 
 			if isPrivate(pathItem.Extensions) {
 				log().Debugf("%s all operations private", basePath+path)
+
 				continue
 			}
 
@@ -411,6 +422,7 @@ func (c *APISpecification) load(specLocation string) error {
 			if ver, ok = pathItem.Extensions[versionExt].(string); !ok {
 				ver = "latest"
 			}
+
 			api.CurrentVersion = ver
 
 			pi := pathItem
@@ -463,22 +475,27 @@ func (c *APISpecification) getMethods(tag spec.Tag, api *APIGroup, methods *[]Me
 func (c *APISpecification) getMethod(tag spec.Tag, api *APIGroup, methods *[]Method, version string, pathitem *spec.PathItem, operation *spec.Operation, path, methodname string) {
 	if operation == nil {
 		log().Tracef("Skipping %s %s - Operation is nil.", path, methodname)
+
 		return
 	}
 
 	if isPrivate(operation.Extensions) {
 		log().Debugf("Skipping %s %s - Operation is private", path, methodname)
+
 		return
 	}
 
+	log().Tracef("  Operation tag length: %d", len(operation.Tags))
+
 	// Filter and sort by matching current top-level tag with the operation tags.
 	// If Tagging is not used by spec, then process each operation without filtering.
-	log().Tracef("  Operation tag length: %d", len(operation.Tags))
 	if len(operation.Tags) == 0 {
 		if tag.Name != "" {
 			log().Tracef("Skipping %s - Operation does not contain a tag member, and tagging is in use.", operation.Summary)
+
 			return
 		}
+
 		method := c.processMethod(api, pathitem, operation, path, methodname, version)
 		*methods = append(*methods, *method)
 	} else {
@@ -511,15 +528,18 @@ func (c *APISpecification) getSecurityDefinitions(s *spec.Swagger) {
 		if stype == "apiKey" {
 			def.IsAPIKey = true
 		}
+
 		if stype == "basic" {
 			def.IsBasic = true
 		}
+
 		if stype == "oauth2" {
 			def.IsOAuth2 = true
 			def.OAuth2Flow = d.Flow                   // implicit, password (explicit) application or accessCode
 			def.AuthorizationURL = d.AuthorizationURL // Only for implicit or accesscode flow
 			def.TokenURL = d.TokenURL                 // Only for implicit, accesscode or password flow
 			def.Scopes = make(map[string]string)
+
 			for s, n := range d.Scopes {
 				def.Scopes[s] = n
 			}
@@ -535,8 +555,10 @@ func (c *APISpecification) getDefaultSecurity(s *spec.Swagger) {
 }
 
 func (c *APISpecification) processMethod(api *APIGroup, pathItem *spec.PathItem, o *spec.Operation, path, methodname, version string) *Method {
-	var opname string
-	var gotOpname bool
+	var (
+		opname    string
+		gotOpname bool
+	)
 
 	operationName := methodname
 	if opname, gotOpname = o.Extensions[opNameExt].(string); gotOpname {
@@ -576,11 +598,13 @@ func (c *APISpecification) processMethod(api *APIGroup, pathItem *spec.PathItem,
 		APIGroup:       api,
 		SortKey:        sortkey,
 	}
+
 	if len(o.Consumes) > 0 {
 		method.Consumes = o.Consumes
 	} else {
 		method.Consumes = api.Consumes
 	}
+
 	if len(o.Produces) > 0 {
 		method.Produces = o.Produces
 	} else {
@@ -596,11 +620,13 @@ func (c *APISpecification) processMethod(api *APIGroup, pathItem *spec.PathItem,
 		api.Name = pathname
 		api.ID = titleToKebab(api.Name)
 	}
+
 	if api.Name == "" {
 		name := o.Summary
 		if name == "" {
 			log().Panicf("Error: Operation %q does not have an operationId or summary member.", id)
 		}
+
 		api.Name = name
 		api.ID = titleToKebab(name)
 	}
@@ -628,6 +654,7 @@ func (c *APISpecification) processMethod(api *APIGroup, pathItem *spec.PathItem,
 				c.ResourceList[version] = make(map[string]*Resource)
 			}
 		}
+
 		r := response
 		rsp := c.buildResponse(&r, method, version)
 		rsp.StatusDescription = httpStatusDescription(status)
@@ -668,6 +695,7 @@ func (c *APISpecification) processParameters(params []spec.Parameter, method *Me
 			if param.Schema == nil {
 				log().Panicf("Error: 'in body' parameter %s is missing a schema declaration.", param.Name)
 			}
+
 			var body map[string]interface{}
 			p.Resource, body, p.IsArray = c.resourceFromSchema(param.Schema, method, nil, true)
 			p.Resource.Schema = jsonResourceToString(body, p.IsArray)
@@ -686,10 +714,12 @@ func (c *APISpecification) buildResponse(resp *spec.Response, method *Method, ve
 	var response *Response
 
 	if resp != nil {
-		var vres *Resource
-		var r *Resource
-		var isArray bool
-		var exampleJSON map[string]interface{}
+		var (
+			vres        *Resource
+			r           *Resource
+			isArray     bool
+			exampleJSON map[string]interface{}
+		)
 
 		if resp.Schema != nil {
 			r, exampleJSON, isArray = c.resourceFromSchema(resp.Schema, method, nil, false)
@@ -700,6 +730,7 @@ func (c *APISpecification) buildResponse(resp *spec.Response, method *Method, ve
 				vres = c.crossLinkMethodAndResource(r, method, version)
 			}
 		}
+
 		response = &Response{
 			Description: string(formatter.Markdown([]byte(resp.Description))),
 			Resource:    vres,
@@ -709,6 +740,7 @@ func (c *APISpecification) buildResponse(resp *spec.Response, method *Method, ve
 
 		response.compileHeaders(resp)
 	}
+
 	return response
 }
 
@@ -720,10 +752,14 @@ func (c *APISpecification) crossLinkMethodAndResource(resource *Resource, method
 	}
 
 	// Look for a pre-declared resource with the response ID, and use that or create the first one...
-	var resFound bool
-	var vres *Resource
+	var (
+		resFound bool
+		vres     *Resource
+	)
+
 	if vres, resFound = c.ResourceList[version][resource.ID]; !resFound {
 		log().Trace("   - Creating new resource")
+
 		vres = resource
 	}
 
@@ -731,6 +767,7 @@ func (c *APISpecification) crossLinkMethodAndResource(resource *Resource, method
 	if vres.Methods == nil {
 		vres.Methods = make(map[string]*Method)
 	}
+
 	vres.Methods[method.ID] = method // Use a map to collapse duplicates.
 
 	// Store resource in resource-list of the specification, considering precident.
@@ -743,6 +780,7 @@ func (c *APISpecification) crossLinkMethodAndResource(resource *Resource, method
 		// and has a lower precident than a response resource.
 		if !resFound {
 			log().Trace("     - Not seen before, so storing in global list")
+
 			c.ResourceList[version][resource.ID] = vres
 		}
 	} else {
@@ -755,6 +793,7 @@ func (c *APISpecification) crossLinkMethodAndResource(resource *Resource, method
 			resource.Methods = vres.Methods
 			vres = resource
 		}
+
 		c.ResourceList[version][resource.ID] = vres // If we've already got the resource, this does nothing
 	}
 
@@ -763,6 +802,7 @@ func (c *APISpecification) crossLinkMethodAndResource(resource *Resource, method
 
 func (c *APISpecification) processSecurity(s []map[string][]string, security map[string]Security) bool {
 	count := 0
+
 	for _, sec := range s {
 		for n, scopes := range sec {
 			// Lookup security name in definitions
@@ -786,6 +826,7 @@ func (c *APISpecification) processSecurity(s []map[string][]string, security map
 			}
 		}
 	}
+
 	return count != 0
 }
 
@@ -823,6 +864,7 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 	}
 
 	originalS := s
+
 	if s.Items != nil {
 		stringorarray := s.Type
 
@@ -849,6 +891,7 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 			s.Type = stringorarray // Put back original type
 			log().Trace("putting s.Type back")
 		}
+
 		log().Tracef("REMAP SCHEMA (Type is now %s)", s.Type)
 	}
 
@@ -870,21 +913,25 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 	}
 
 	var isArray bool
+
 	if strings.EqualFold(s.Type[0], arrayType) {
 		fqNSlen := len(fqNS)
 		if fqNSlen > 0 {
 			fqNS = append(fqNS[0:fqNSlen-1], fqNS[fqNSlen-1]+"[]")
 		}
+
 		isArray = true
 	}
 
 	myFQNS := fqNS
+
 	var chopped bool
 
 	if id == "" && len(myFQNS) > 0 {
 		id = myFQNS[len(myFQNS)-1]
 		myFQNS = append([]string{}, myFQNS[0:len(myFQNS)-1]...)
 		chopped = true
+
 		log().Tracef("Chopped %s from myFQNS leaving %s", id, myFQNS)
 	}
 
@@ -895,6 +942,7 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 		if len(resourceFQNS) > 0 {
 			id = resourceFQNS[len(resourceFQNS)-1]
 			resourceFQNS = resourceFQNS[:len(resourceFQNS)-1]
+
 			log().Tracef("Got an object, so slicing %s from resourceFQNS leaving %s", id, myFQNS)
 		}
 	}
@@ -908,6 +956,7 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 	}
 
 	log().Tracef("Create resource %s [%s]", id, s.Title)
+
 	if isArray {
 		log().Trace("- Is Arrays")
 	}
@@ -926,6 +975,7 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 		if err != nil {
 			log().Errorf("Error encoding example json: %s", err)
 		}
+
 		r.Example = string(example)
 	}
 
@@ -936,6 +986,7 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 	}
 
 	r.ReadOnly = originalS.ReadOnly
+
 	if ops, ok := originalS.Extensions[excludeOpExt].([]interface{}); ok && isRequestResource {
 		// Mark resource property as being excluded from operations with this name.
 		// This filtering only takes effect in a request body, just like readOnly, so when isRequestResource is true
@@ -964,8 +1015,7 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 // Takes a Schema object and adds properties to the Resource object.
 // It uses the 'required' map to set when properties are required and builds a JSON
 // representation of the resource.
-func (c *APISpecification) compileproperties(s *spec.Schema, r *Resource, method *Method, id string,
-	required map[string]bool, jsonRep map[string]interface{}, myFQNS []string,
+func (c *APISpecification) compileproperties(s *spec.Schema, r *Resource, method *Method, id string, required map[string]bool, jsonRep map[string]interface{}, myFQNS []string,
 	chopped, isRequestResource bool) {
 	// First, grab the required members
 	for _, n := range s.Required {
@@ -982,20 +1032,28 @@ func (c *APISpecification) compileproperties(s *spec.Schema, r *Resource, method
 	if s.AdditionalProperties != nil && s.AdditionalProperties.Allows {
 		name := "<key>"
 		ap := s.AdditionalProperties.Schema
-		ap.Type = spec.StringOrArray([]string{"map", ap.Type[0]}) // massage type so that it is a map of 'type'
+
+		if len(ap.Type) == 0 {
+			ap.Type = spec.StringOrArray([]string{"map", "object"})
+		} else {
+			ap.Type = spec.StringOrArray([]string{"map", ap.Type[0]}) // massage type so that it is a map of 'type'
+		}
 
 		c.processProperty(ap, name, r, method, id, required, jsonRep, myFQNS, chopped, isRequestResource)
 	}
 }
 
-func (c *APISpecification) processProperty(s *spec.Schema, name string, r *Resource, method *Method, id string,
-	required map[string]bool, jsonRep map[string]interface{}, myFQNS []string, chopped, isRequestResource bool) {
+func (c *APISpecification) processProperty(s *spec.Schema, name string, r *Resource, method *Method, id string, required map[string]bool, jsonRep map[string]interface{}, myFQNS []string,
+	chopped, isRequestResource bool) {
 	newFQNS := prepareNamespace(myFQNS, id, name, chopped)
 
-	var jsonResource map[string]interface{}
-	var resource *Resource
+	var (
+		jsonResource map[string]interface{}
+		resource     *Resource
+	)
 
 	log().Tracef("A call resourceFromSchema for property %s", name)
+
 	resource, jsonResource, _ = c.resourceFromSchema(s, method, newFQNS, isRequestResource)
 
 	skip := isRequestResource && resource.ReadOnly
@@ -1005,11 +1063,14 @@ func (c *APISpecification) processProperty(s *spec.Schema, name string, r *Resou
 		for _, opname := range resource.ExcludeFromOperations {
 			if opname == method.OperationName {
 				log().Tracef("[%s] is excluded", name)
+
 				skip = true
+
 				break
 			}
 		}
 	}
+
 	if skip {
 		return
 	}
@@ -1020,12 +1081,14 @@ func (c *APISpecification) processProperty(s *spec.Schema, name string, r *Resou
 	if _, ok := required[name]; ok {
 		r.Properties[name].Required = true
 	}
+
 	log().Tracef("resource property %s type: %s", name, r.Properties[name].Type[0])
 
 	if !strings.EqualFold(r.Properties[name].Type[0], "object") {
 		// Arrays of objects need to be handled as a special case
 		if strings.EqualFold(r.Properties[name].Type[0], arrayType) {
 			log().Tracef("Processing an array property %s", name)
+
 			if s.Items != nil {
 				if s.Items.Schema != nil {
 					// Some outputs (example schema, member description) are generated differently
@@ -1055,6 +1118,7 @@ func (c *APISpecification) processProperty(s *spec.Schema, name string, r *Resou
 							// Got an array of primitives
 							arrayObj = append(arrayObj, r.Properties[name].Type[1])
 						}
+
 						jsonRep[name] = arrayObj
 					}
 				} else { // array and property.Items.Schema is NIL
@@ -1088,12 +1152,16 @@ func (p *Parameter) setType(src spec.Parameter) {
 		if src.CollectionFormat == "" {
 			src.CollectionFormat = "csv"
 		}
+
 		p.Type = append(p.Type, src.Type)
 		p.CollectionFormat = src.CollectionFormat
 		p.CollectionFormatDescription = collectionFormatDescription(src.CollectionFormat)
 	}
-	var ptype string
-	var format string
+
+	var (
+		ptype  string
+		format string
+	)
 
 	if src.Type == arrayType {
 		ptype = src.Items.Type
@@ -1106,20 +1174,24 @@ func (p *Parameter) setType(src spec.Parameter) {
 	if format != "" {
 		ptype = format
 	}
+
 	p.Type = append(p.Type, ptype)
 }
 
 func (p *Parameter) setEnums(src spec.Parameter) {
 	var ea []interface{}
+
 	if src.Type == arrayType {
 		ea = src.Items.Enum
 	} else {
 		ea = src.Enum
 	}
-	var es = make([]string, 0)
+
+	es := make([]string, 0)
 	for _, e := range ea {
 		es = append(es, fmt.Sprintf("%s", e))
 	}
+
 	p.Enum = es
 }
 
@@ -1135,10 +1207,12 @@ func (r *Response) compileHeaders(sr *spec.Response) {
 		}
 
 		htype := getType(params)
+
 		if params.Type == arrayType {
 			if params.CollectionFormat == "" {
 				params.CollectionFormat = "csv"
 			}
+
 			header.Type = append(header.Type, params.Type)
 			header.CollectionFormat = params.CollectionFormat
 			header.CollectionFormatDescription = collectionFormatDescription(params.CollectionFormat)
@@ -1148,6 +1222,7 @@ func (r *Response) compileHeaders(sr *spec.Response) {
 		if format != "" {
 			htype = format
 		}
+
 		header.Type = append(header.Type, htype)
 		header.Enum = getEnums(params)
 
@@ -1159,6 +1234,7 @@ func (api *APIGroup) getMethodSortKey(path, method, operation, navigation, summa
 	// Handle a list of sort-by values, so that ordering can be fixed.
 	// Sorting by path alone does not work because ordering changes around GET/POST/PUT Etc
 	var key string
+
 	for _, sortby := range api.MethodSortBy {
 		switch sortby {
 		case "path":
@@ -1172,8 +1248,10 @@ func (api *APIGroup) getMethodSortKey(path, method, operation, navigation, summa
 		case "summary":
 			key += summary
 		}
+
 		key += "~"
 	}
+
 	if key == "" {
 		key = summary
 	}
@@ -1184,15 +1262,18 @@ func (api *APIGroup) getMethodSortKey(path, method, operation, navigation, summa
 func getTags(specification *spec.Swagger) []spec.Tag {
 	tags := make([]spec.Tag, 0)
 	tags = append(tags, specification.Tags...)
+
 	if len(tags) == 0 {
 		tags = append(tags, spec.Tag{})
 	}
+
 	return tags
 }
 
 func jsonResourceToString(jsonres map[string]interface{}, isArray bool) string {
 	// If the resource is an array, then append json object to outer array, else serialize the object.
 	var example []byte
+
 	if isArray {
 		var arrayObj []map[string]interface{}
 		arrayObj = append(arrayObj, jsonres)
@@ -1200,6 +1281,7 @@ func jsonResourceToString(jsonres map[string]interface{}, isArray bool) string {
 	} else {
 		example, _ = jsonMarshalIndent(jsonres)
 	}
+
 	return string(example)
 }
 
@@ -1266,14 +1348,14 @@ func prepareNamespace(myFQNS []string, id, name string, chopped bool) []string {
 	return newFQNS
 }
 
-// titleToKebab convert a Title string to kebab
+// titleToKebab convert a Title string to kebab.
 func titleToKebab(s string) string {
 	return strings.ReplaceAll(
 		string(kababExclude.ReplaceAll([]byte(strings.ToLower(s)), []byte(""))),
 		" ", "-")
 }
 
-// camelToKebab converts camel case to kebab
+// camelToKebab converts camel case to kebab.
 func camelToKebab(s string) string {
 	return strings.ReplaceAll(snaker.CamelToSnake(s), "_", "-")
 }
@@ -1284,12 +1366,14 @@ func loadSpec(location string) (*loads.Document, error) {
 	raw, err := swag.LoadFromFileOrHTTP(location)
 	if err != nil {
 		log().Errorf("Error: go-openapi/swag failed to load spec [%s]: %s", location, err)
+
 		return nil, err
 	}
 
 	document, err := loads.Analyzed(json.RawMessage(replace(raw)), "")
 	if err != nil {
 		log().Errorf("Error: go-openapi/loads failed to analyze spec: %s", err)
+
 		return nil, err
 	}
 
@@ -1301,13 +1385,14 @@ func loadSpec(location string) (*loads.Document, error) {
 	return document, err
 }
 
-// jsonMarshalIndent Wrapper around MarshalIndent to prevent < > & from being escaped
+// jsonMarshalIndent Wrapper around MarshalIndent to prevent < > & from being escaped.
 func jsonMarshalIndent(v interface{}) ([]byte, error) {
 	b, err := json.MarshalIndent(v, "", "    ")
 
 	b = bytes.ReplaceAll(b, []byte("\\u003c"), []byte("<"))
 	b = bytes.ReplaceAll(b, []byte("\\u003e"), []byte(">"))
 	b = bytes.ReplaceAll(b, []byte("\\u0026"), []byte("&"))
+
 	return b, err
 }
 
@@ -1316,20 +1401,25 @@ func isLocalSpecURL(specURL string) bool {
 	if err != nil {
 		log().Panicf("Attempted to match against an invalid regexp: %s", err)
 	}
+
 	return !match
 }
 
 func normalizeSpecLocation(specLocation string) string {
 	if isLocalSpecURL(specLocation) {
 		log().Debugf("SpecDir = %s", viper.GetString(config.SpecDir))
+
 		base, err := filepath.Abs(viper.GetString(config.SpecDir))
 		if err != nil {
 			log().Errorf("Error forming specification path: %s", err)
 		}
+
 		base = filepath.ToSlash(base)
 		log().Debugf("SpecDir (base) = %s", base)
+
 		return filepath.Join(base, specLocation)
 	}
+
 	return specLocation
 }
 
@@ -1344,6 +1434,7 @@ func getType(h spec.Header) string {
 	if h.Type == arrayType {
 		return h.Items.Type
 	}
+
 	return h.Type
 }
 
@@ -1351,20 +1442,24 @@ func getFormat(h spec.Header) string {
 	if h.Type == arrayType {
 		return h.Items.Format
 	}
+
 	return h.Format
 }
 
 func getEnums(h spec.Header) []string {
 	var ea []interface{}
+
 	if h.Type == arrayType {
 		ea = h.Items.Enum
 	} else {
 		ea = h.Enum
 	}
-	var es = make([]string, 0)
+
+	es := make([]string, 0)
 	for _, e := range ea {
 		es = append(es, fmt.Sprintf("%s", e))
 	}
+
 	return es
 }
 
@@ -1372,6 +1467,7 @@ func isPrivate(exts spec.Extensions) bool {
 	if pv, ok := exts.GetString(visibilityExt); ok {
 		return pv == "private"
 	}
+
 	return false
 }
 

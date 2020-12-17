@@ -1,0 +1,1448 @@
+{
+  "produces": [
+    "application/vnd.cia.v1+json"
+  ],
+  "schemes": [
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "Provides management of the consumption data of resources managed by Multicloud Manager",
+    "title": "Service Consumption",
+    "version": "0.26.0"
+  },
+  "basePath": "/v1",
+  "paths": {
+    "/consumption/reports": {
+      "get": {
+        "produces": [
+          "text/csv",
+          "application/vnd.cia.v1+json"
+        ],
+        "tags": [
+          "consumption"
+        ],
+        "summary": "Get Consumption Report",
+        "operationId": "getConsumptionReports",
+        "parameters": [
+          {
+            "enum": [
+              "billing_summary"
+            ],
+            "type": "string",
+            "description": "Requested Report type listed below.\n\n* `billing_summary` - Consumption report by **Bill To Department** for the `period`\n",
+            "name": "type",
+            "in": "query",
+            "required": true
+          },
+          {
+            "enum": [
+              "FM",
+              "PREV_FM",
+              "CM",
+              "PREV_M"
+            ],
+            "type": "string",
+            "description": "Consumption period as a mnemonic\n  FM -\u003e Current Fiscal Month - **DEPRECATED** set **FM** to `CM`\n  PREV_FM -\u003e Previous Fiscal Month - **DEPRECATED** set **PREV_FM** to `PREV_M`\n  CM -\u003e Current Month - Default if none provided\n  PREV_M -\u003e Previous Month\n",
+            "name": "period",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "enum": [
+                "service",
+                "version",
+                "location",
+                "tenant",
+                "service_group",
+                "resource",
+                "all"
+              ],
+              "type": "string"
+            },
+            "description": "Include and group by additional attributes that are available for report types `billing_summary`\n\n---\nThis can be one or more strings delimited by a comma. The set of possible values is as documented below.\n\n* `tenant`        - Tenant ID and Name\n* `service_group` - Service Group ID and Name (implicitly includes `tenant`)\n* `resource`      - Resource ID, Name and External ID (implicitly includes `service_group`)\n* `service`       - Service ID, name, version and location (implicitly includes `resource`)\n* `all`           - Include all of the above\n---\n\nIf no `group_by` is provided, then by default only **Bill To Department** for `billing_summary`.\n",
+            "name": "group_by",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consumption Report",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "report"
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "422": {
+            "$ref": "#/responses/422"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for tenant",
+          "name": "X-Tenant-Id",
+          "in": "header",
+          "required": true
+        }
+      ]
+    },
+    "/consumption/services/{serviceName}": {
+      "get": {
+        "tags": [
+          "consumption"
+        ],
+        "summary": "Get Aggregated Consumption for a CSP",
+        "operationId": "getCspConsumption",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "date",
+            "description": "Consumption start date\nIf `period` is provided, then `start_dt` is ignored\n\nIf only `end_dt` is provided, then `start_dt` defaults to the beginning of `end_dt` month\n",
+            "name": "start_dt",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "format": "date",
+            "description": "Consumption end date\n\nIf `period` is provided, then `end_dt` is ignored\n\nIf only `start_dt` is provided, then `end_dt` defaults to the end of `start_dt` month\n",
+            "name": "end_dt",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "CM",
+              "PREV_CM",
+              "PREV_M",
+              "CQ",
+              "PREV_Q"
+            ],
+            "type": "string",
+            "description": "Consumption period as a mnemonic\n  CM -\u003e Current Month - Default if none of `start_dt`, `end_dt` or `period` provided\n  PREV_M -\u003e Previous Month\n  CQ -\u003e Current Quarter\n  PREV_Q -\u003e Previous Quarter\n",
+            "name": "period",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Location of  the service",
+            "name": "location",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Version of the  service",
+            "name": "version",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Aggregated CSP Consumption",
+            "schema": {
+              "$ref": "#/definitions/csp_consumption"
+            },
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Service name for CSP",
+          "name": "serviceName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "string",
+          "description": "Service name of the CSP",
+          "name": "X-Service",
+          "in": "header",
+          "required": true
+        }
+      ]
+    },
+    "/consumption/services/{serviceName}/resources": {
+      "get": {
+        "tags": [
+          "consumption"
+        ],
+        "summary": "Get resource consumption for a CSP",
+        "operationId": "getCspResourceConsumption",
+        "parameters": [
+          {
+            "enum": [
+              "CM",
+              "PREV_CM",
+              "PREV_M",
+              "CQ",
+              "PREV_Q"
+            ],
+            "type": "string",
+            "description": "Consumption period as a mnemonic\n  CM -\u003e Current Month - Default if none of `start_dt`, `end_dt` or `period` provided\n  PREV_M -\u003e Previous Month\n  CQ -\u003e Current Quarter\n  PREV_Q -\u003e Previous Quarter\n",
+            "name": "period",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "filter the fields in each returned record. (comma-delimited)",
+            "name": "fields",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "description": "max number of records to return.",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "description": "segment of records to return incremented by limit.",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "pattern": "[-]?\\w+",
+              "type": "string"
+            },
+            "description": "sort by fields that determines the order of the results. (comma-delimited)",
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Location of  the service",
+            "name": "location",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Version of the  service",
+            "name": "version",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "ID of the resource",
+            "name": "external_id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Aggregated per csp resource consumption",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/resource_consumption"
+              }
+            },
+            "headers": {
+              "Link": {
+                "type": "string",
+                "description": "Pagination links"
+              },
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              },
+              "X-Total-Count": {
+                "type": "integer",
+                "format": "int64",
+                "description": "Total number of results (if known)"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Service name for CSP",
+          "name": "serviceName",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "string",
+          "description": "Service name of the CSP",
+          "name": "X-Service",
+          "in": "header",
+          "required": true
+        }
+      ]
+    },
+    "/consumption/tenants/{tenantId}": {
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Tenant",
+          "name": "tenantId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for tenant",
+          "name": "X-Tenant-Id",
+          "in": "header"
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for service group",
+          "name": "X-SG-Id",
+          "in": "header"
+        }
+      ]
+    },
+    "/consumption/tenants/{tenantId}/projections": {
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Tenant",
+          "name": "tenantId",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/consumption/tenants/{tenantId}/servicegroups/{serviceGroupId}": {
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Tenant",
+          "name": "tenantId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Service Group",
+          "name": "serviceGroupId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Tenant",
+          "name": "X-Tenant-Id",
+          "in": "header"
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Service Group",
+          "name": "X-SG-Id",
+          "in": "header"
+        }
+      ]
+    },
+    "/consumption/tenants/{tenantId}/servicegroups/{serviceGroupId}/resources/{resourceId}": {
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Tenant",
+          "name": "tenantId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Service Group",
+          "name": "serviceGroupId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Resource",
+          "name": "resourceId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for tenant",
+          "name": "X-Tenant-Id",
+          "in": "header"
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for service group",
+          "name": "X-SG-Id",
+          "in": "header"
+        }
+      ]
+    },
+    "/costs/{serviceName}": {
+      "post": {
+        "consumes": [
+          "application/vnd.cia.v1+json"
+        ],
+        "tags": [
+          "metrics"
+        ],
+        "summary": "Accepts unit cost consumption measurements for a period of time",
+        "operationId": "publishCosts",
+        "parameters": [
+          {
+            "description": "consumption costs for the serviceName",
+            "name": "consumption",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/consumption_cost"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Consumption cost were accepted",
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Service name of the CSP",
+          "name": "serviceName",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/measurements/{serviceName}": {
+      "post": {
+        "consumes": [
+          "application/vnd.cia.v1+json"
+        ],
+        "tags": [
+          "metrics"
+        ],
+        "summary": "Accepts unit consumption measurements for a period of time",
+        "operationId": "publishMeasurements",
+        "parameters": [
+          {
+            "description": "consumption measurements for serviceName",
+            "name": "consumption",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/consumption_measurement"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Consumption cost were accepted",
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "description": "Service name of the CSP",
+          "name": "serviceName",
+          "in": "path",
+          "required": true
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "account_consumption": {
+      "title": "Account Consumption Structure",
+      "allOf": [
+        {
+          "$ref": "#/definitions/consumption"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "account": {
+              "type": "object",
+              "title": "Account Consumption",
+              "$ref": "#/definitions/account_consumption"
+            },
+            "assets": {
+              "type": "object",
+              "title": "Asset Consumption",
+              "additionalProperties": {
+                "$ref": "#/definitions/asset_consumption"
+              }
+            },
+            "external_id": {
+              "type": "string",
+              "format": "string",
+              "title": "External ID",
+              "example": "aaaa7845-00e8-43f7-8ff6-100855589c57"
+            },
+            "service_id": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Service ID",
+              "example": "aaaa7845-00e8-43f7-8ff6-100855589c57"
+            },
+            "service_location": {
+              "type": "string",
+              "title": "Service Location",
+              "example": "svl-fab3-lab2"
+            },
+            "service_name": {
+              "type": "string",
+              "title": "Service Name",
+              "example": "OPENSTACK"
+            },
+            "service_version": {
+              "type": "string",
+              "title": "Service Version",
+              "example": "NEWTON"
+            }
+          }
+        }
+      ]
+    },
+    "asset_consumption": {
+      "title": "Asset Consumption Structure",
+      "allOf": [
+        {
+          "$ref": "#/definitions/consumption"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "external_id": {
+              "type": "string",
+              "format": "string",
+              "title": "External ID",
+              "example": "aaaa7845-00e8-43f7-8ff6-100855589c57"
+            },
+            "service_id": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Service ID",
+              "example": "aaaa7845-00e8-43f7-8ff6-100855589c57"
+            },
+            "service_location": {
+              "type": "string",
+              "title": "Service Location",
+              "example": "svl-fab3-lab2"
+            },
+            "service_name": {
+              "type": "string",
+              "title": "Service Name",
+              "example": "OPENSTACK"
+            },
+            "service_version": {
+              "type": "string",
+              "title": "Service Version",
+              "example": "NEWTON"
+            }
+          }
+        }
+      ]
+    },
+    "bill_to_department_consumption": {
+      "type": "object",
+      "title": "Bill To Department Consumption Structure",
+      "properties": {
+        "available_funds": {
+          "type": "number",
+          "format": "double",
+          "title": "Available Funds",
+          "example": 1230.456
+        },
+        "billable_amount": {
+          "type": "number",
+          "format": "double",
+          "title": "Billable Amount",
+          "example": 1230.456
+        },
+        "charge_description": {
+          "type": "string",
+          "title": "Charge Description (pipe delimited)",
+          "example": "\u003cfinancial_analyst\u003e-Q1FY18 M2 Cloud Usage | contact: \u003cmcmp-billing-contact\u003e"
+        },
+        "consumption_cost": {
+          "type": "object",
+          "title": "consumption cost",
+          "additionalProperties": {
+            "type": "number",
+            "format": "double"
+          },
+          "example": {
+            "cpu": 100,
+            "ephemeral": 11,
+            "instances": 10,
+            "ram": 500
+          }
+        },
+        "end_ts": {
+          "type": "string",
+          "title": "Consumption end timestamp in ISO 8601 format",
+          "example": "2018-02-28T23:59:59Z"
+        },
+        "financial_analyst": {
+          "type": "string",
+          "title": "Financial Analyst",
+          "example": "somefa"
+        },
+        "funding_department_id": {
+          "type": "string",
+          "title": "Funding Department ID",
+          "example": 12345678
+        },
+        "receiving_department_id": {
+          "type": "string",
+          "title": "Receiving Department  ID",
+          "example": 12345678
+        },
+        "start_ts": {
+          "type": "string",
+          "title": "Consumption start timestamp in ISO 8601 format",
+          "example": "2018-02-01T00:00:00Z"
+        },
+        "tenant_consumption": {
+          "type": "object",
+          "title": "Tenant Consumption",
+          "additionalProperties": {
+            "$ref": "#/definitions/tenant_consumption"
+          }
+        },
+        "total_cost": {
+          "type": "number",
+          "format": "double",
+          "title": "Consumption Total Cost",
+          "example": 1230.456
+        },
+        "unit_consumption": {
+          "type": "object",
+          "title": "unit consumption",
+          "additionalProperties": {
+            "type": "number",
+            "format": "double"
+          },
+          "example": {
+            "cpu": 1000,
+            "ephemeral": 1100,
+            "instances": 100,
+            "ram": 50000
+          }
+        },
+        "us_department": {
+          "description": "Funding Department starts with 020 =\u003e US =\u003e true else false",
+          "type": "boolean",
+          "title": "US Department",
+          "example": "true|false"
+        }
+      }
+    },
+    "consumption": {
+      "type": "object",
+      "title": "Consumption Structure",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "consumption_cost": {
+          "type": "object",
+          "title": "consumption cost",
+          "additionalProperties": {
+            "type": "number",
+            "format": "double"
+          },
+          "example": {
+            "cpu": 100,
+            "ephemeral": 11,
+            "instances": 10,
+            "ram": 500
+          }
+        },
+        "end_ts": {
+          "type": "string",
+          "title": "Consumption end timestamp in ISO 8601 format",
+          "example": "2018-02-28T23:59:59Z"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "ID",
+          "example": "cb977845-00e8-43f7-8ff6-100855589c57"
+        },
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "example": "some name"
+        },
+        "start_ts": {
+          "type": "string",
+          "title": "Consumption start timestamp in ISO 8601 format",
+          "example": "2018-02-01T00:00:00Z"
+        },
+        "total_cost": {
+          "type": "number",
+          "format": "double",
+          "title": "Consumption Total Cost",
+          "example": 12.3456
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "tenant_consumption",
+            "service_group_consumption",
+            "account_consumption",
+            "resource_consumption",
+            "asset_consumption"
+          ],
+          "example": "tenant_consumption"
+        },
+        "unit_consumption": {
+          "type": "object",
+          "title": "unit consumption",
+          "additionalProperties": {
+            "type": "number",
+            "format": "double"
+          },
+          "example": {
+            "cpu": 1000,
+            "ephemeral": 1100,
+            "instances": 100,
+            "ram": 50000
+          }
+        }
+      },
+      "discriminator": "type"
+    },
+    "consumption_cost": {
+      "title": "Consumption Cost",
+      "allOf": [
+        {
+          "$ref": "#/definitions/service"
+        },
+        {
+          "type": "object",
+          "required": [
+            "consumption"
+          ],
+          "properties": {
+            "consumption": {
+              "type": "array",
+              "title": "Resource Unit Costs",
+              "maxItems": 100,
+              "minItems": 1,
+              "items": {
+                "$ref": "#/definitions/resource_unit_cost"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "consumption_measurement": {
+      "title": "Consumption measurement",
+      "allOf": [
+        {
+          "$ref": "#/definitions/service"
+        },
+        {
+          "type": "object",
+          "required": [
+            "consumption"
+          ],
+          "properties": {
+            "consumption": {
+              "type": "array",
+              "title": "Resource unit measurements",
+              "maxItems": 100,
+              "minItems": 1,
+              "items": {
+                "$ref": "#/definitions/resource_unit_measurement"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "csp_consumption": {
+      "title": "CSP consumption Structure",
+      "allOf": [
+        {
+          "$ref": "#/definitions/consumption"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "service_consumption": {
+              "type": "object",
+              "title": "Service Consumption",
+              "additionalProperties": {
+                "$ref": "#/definitions/service_consumption"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "error": {
+      "description": "An error provides information about why the request failed.\n",
+      "type": "object",
+      "title": "Error",
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "description": "Code identifies a specific type of error.\n",
+          "type": "string",
+          "title": "Code"
+        },
+        "message": {
+          "description": "The message provides details about the failure.\n",
+          "type": "string",
+          "title": "Message"
+        }
+      }
+    },
+    "resource_consumption": {
+      "title": "Resource Consumption Structure",
+      "allOf": [
+        {
+          "$ref": "#/definitions/consumption"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "external_id": {
+              "type": "string",
+              "format": "string",
+              "title": "External ID",
+              "example": "aaaa7845-00e8-43f7-8ff6-100855589c57"
+            },
+            "service_id": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Service ID",
+              "example": "aaaa7845-00e8-43f7-8ff6-100855589c57"
+            },
+            "service_location": {
+              "type": "string",
+              "title": "Service Location",
+              "example": "svl-fab3-lab2"
+            },
+            "service_name": {
+              "type": "string",
+              "title": "Service Name",
+              "example": "OPENSTACK"
+            },
+            "service_version": {
+              "type": "string",
+              "title": "Service Version",
+              "example": "NEWTON"
+            }
+          }
+        }
+      ]
+    },
+    "resource_unit_cost": {
+      "type": "object",
+      "title": "Resource unit cost",
+      "required": [
+        "external_id",
+        "costs"
+      ],
+      "properties": {
+        "costs": {
+          "type": "object",
+          "title": "Costs",
+          "additionalProperties": {
+            "type": "number",
+            "format": "double"
+          },
+          "example": {
+            "unit-1": 1.2,
+            "unit-2": 3.8
+          }
+        },
+        "external_id": {
+          "type": "string",
+          "title": "external_id of the resource",
+          "example": "abc123"
+        }
+      }
+    },
+    "resource_unit_measurement": {
+      "type": "object",
+      "title": "Resource unit measurement",
+      "required": [
+        "measurements",
+        "external_id"
+      ],
+      "properties": {
+        "external_id": {
+          "type": "string",
+          "title": "external_id of the resource",
+          "example": "abc123"
+        },
+        "measurements": {
+          "type": "object",
+          "title": "measurements",
+          "additionalProperties": {
+            "type": "number",
+            "format": "double"
+          },
+          "example": {
+            "unit-1": 12,
+            "unit-2": 2.3,
+            "unit-3.a": 4.56
+          }
+        }
+      }
+    },
+    "service": {
+      "description": "Service Details",
+      "type": "object",
+      "title": "Service",
+      "required": [
+        "consumed_on",
+        "period_type"
+      ],
+      "properties": {
+        "consumed_on": {
+          "type": "string",
+          "format": "date-time",
+          "title": "the timeframe associated with this consumption metrics publish",
+          "example": "2020-10-16T10:00:00Z"
+        },
+        "message_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Message ID associated with this request",
+          "example": "01f8033f-d30a-4b08-be31-fa6733b13159"
+        },
+        "period_type": {
+          "type": "string",
+          "title": "whether this is HOURLY or DAILY consumption",
+          "enum": [
+            "HOURLY",
+            "DAILY"
+          ],
+          "example": "HOURLY"
+        },
+        "service_location": {
+          "type": "string",
+          "title": "service location associated with the service",
+          "example": "us-east-1"
+        },
+        "service_version": {
+          "type": "string",
+          "title": "service version associated with the service",
+          "example": "NEWTON"
+        }
+      }
+    },
+    "service_consumption": {
+      "title": "Service Consumption Structure",
+      "allOf": [
+        {
+          "$ref": "#/definitions/consumption"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "service_id": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Service ID",
+              "example": "aaaa7845-00e8-43f7-8ff6-100855589c57"
+            },
+            "service_location": {
+              "type": "string",
+              "title": "Service Location",
+              "example": "svl-fab3-lab2"
+            },
+            "service_name": {
+              "type": "string",
+              "title": "Service Name",
+              "example": "OPENSTACK"
+            },
+            "service_version": {
+              "type": "string",
+              "title": "Service Version",
+              "example": "NEWTON"
+            }
+          }
+        }
+      ]
+    },
+    "service_group_consumption": {
+      "title": "Service Group Consumption Structure",
+      "allOf": [
+        {
+          "$ref": "#/definitions/consumption"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "resource_consumption": {
+              "type": "object",
+              "title": "Resource Consumption",
+              "additionalProperties": {
+                "$ref": "#/definitions/resource_consumption"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "tenant_consumption": {
+      "title": "Tenant Consumption Structure",
+      "allOf": [
+        {
+          "$ref": "#/definitions/consumption"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "account_consumption": {
+              "type": "object",
+              "title": "Account Consumption",
+              "additionalProperties": {
+                "$ref": "#/definitions/account_consumption"
+              }
+            },
+            "available_funds": {
+              "type": "number",
+              "format": "double",
+              "title": "Available Funds",
+              "example": 1230.456
+            },
+            "billable_amount": {
+              "type": "number",
+              "format": "double",
+              "title": "Billable Amount",
+              "example": 1230.456
+            },
+            "month_days": {
+              "type": "integer",
+              "title": "Month Days",
+              "example": 31
+            },
+            "month_days_remaining": {
+              "type": "integer",
+              "title": "Month Days Remaining",
+              "example": 20
+            },
+            "projected_monthly_spend": {
+              "type": "number",
+              "format": "double",
+              "title": "Projected Monthly Spend",
+              "example": 30.45
+            },
+            "projected_on": {
+              "type": "string",
+              "format": "date-time",
+              "title": "Date when the projection was made",
+              "x-nullable": true,
+              "example": "2018-03-20T09:12:28Z"
+            },
+            "projected_quarterly_spend": {
+              "type": "number",
+              "format": "double",
+              "title": "Projected quarterly Spend",
+              "example": 45.45
+            },
+            "quarter_days": {
+              "type": "integer",
+              "title": "Quarter Days",
+              "example": 91
+            },
+            "quarter_days_remaining": {
+              "type": "integer",
+              "title": "Quater Days Remaining",
+              "example": 30
+            },
+            "service_group_consumption": {
+              "type": "object",
+              "title": "Service Group Consumption",
+              "additionalProperties": {
+                "$ref": "#/definitions/service_group_consumption"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "user": {
+      "description": "A User is the authenticated person performing actions.\n",
+      "type": "object",
+      "title": "User Structure",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "client_id": {
+          "description": "Client_id is created via PingID",
+          "type": "string",
+          "title": "Oauth2 client_id"
+        },
+        "display": {
+          "description": "Formal name used when greeting a person",
+          "type": "string",
+          "title": "Display name"
+        },
+        "name": {
+          "description": "Human readable identifier",
+          "type": "string",
+          "title": "Login name"
+        },
+        "token": {
+          "description": "Token used during authentication",
+          "type": "string",
+          "title": "Authentication token"
+        }
+      }
+    }
+  },
+  "responses": {
+    "400": {
+      "description": "Invalid Request Error. Check error message in the response body for details.\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-001",
+          "message": "Missing required attribute 'name'."
+        }
+      }
+    },
+    "401": {
+      "description": "Authentication Failure\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-002",
+          "message": "Authentication failed bad password."
+        }
+      }
+    },
+    "402": {
+      "description": "Insufficient Funds\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-003",
+          "message": "Insufficient Funds to cover the cost of resource."
+        }
+      }
+    },
+    "403": {
+      "description": "Authorization Failure\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-004",
+          "message": "Not authorized to perform action."
+        }
+      }
+    },
+    "404": {
+      "description": "Resource not found\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-005",
+          "message": "Resource \u003cid\u003e does not exist."
+        }
+      }
+    },
+    "409": {
+      "description": "Conflict\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-006",
+          "message": "Resource already exists."
+        }
+      }
+    },
+    "422": {
+      "description": "Unprocessable Entity Failure\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-007",
+          "message": "Resource is not able to be updated."
+        }
+      }
+    },
+    "500": {
+      "description": "Internal Server Error. Check error entity in the response body for details.\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-009",
+          "message": "Internal server error."
+        }
+      }
+    },
+    "503": {
+      "description": "Service Unavailable\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-010",
+          "message": "Service Unavailable."
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "token": {
+      "type": "oauth2",
+      "flow": "password",
+      "tokenUrl": "https://cloudsso-test.cisco.com/as/token.oauth2",
+      "scopes": {
+        "funds:admin": "Funds Admin",
+        "servicegroup:admin": "Service Group Admin",
+        "servicegroup:operator": "Service Group Operator",
+        "servicegroup:view": "Service Group View",
+        "tenant:admin": "Tenant Administrator",
+        "tenant:operator": "Tenant Operator",
+        "tenant:view": "Tenant View"
+      }
+    }
+  },
+  "security": [
+    {
+      "token": []
+    }
+  ],
+  "tags": [
+    {
+      "description": "Service Consumption Operations",
+      "name": "consumption"
+    },
+    {
+      "description": "Consumption measurements and costs ingestion operations",
+      "name": "metrics"
+    }
+  ],
+  "x-groupby": "Platform APIs",
+  "x-mcmp-component-type": "core",
+  "x-navigateMethodsByName": true,
+  "x-sortMethodsBy": [
+    "operation",
+    "path"
+  ]
+}

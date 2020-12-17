@@ -1,0 +1,3454 @@
+{
+  "produces": [
+    "application/vnd.cia.v1+json"
+  ],
+  "schemes": [
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "Provides management of cloud resources, budgets, and user authorization in Multicloud Manager",
+    "title": "Tenant Management",
+    "version": "0.38.0"
+  },
+  "basePath": "/v1",
+  "paths": {
+    "/accounts/{accountId}/assets": {
+      "get": {
+        "description": "List all assets, with optional query parameters.",
+        "tags": [
+          "account"
+        ],
+        "summary": "List Assets",
+        "operationId": "listAssets",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Search Assets by name",
+            "name": "name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Search Assets by service name",
+            "name": "service_name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Search Assets by service region",
+            "name": "service_region",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Search Assets by service version",
+            "name": "service_version",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "NEW",
+              "ACTIVE",
+              "FAILED"
+            ],
+            "type": "string",
+            "description": "Search Assets by status",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter the fields in each returned record. (comma-delimited)",
+            "name": "fields",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Max number of records to return.",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Segment of records to return incremented by limit.",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "pattern": "^[-]?[\\w.]+$",
+              "type": "string"
+            },
+            "description": "Sort by fields that determines the order of the results. (comma-delimited)",
+            "name": "sort",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of Assets",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/asset_view"
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Parent Tenant ID",
+          "name": "X-Tenant-Id",
+          "in": "header",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Account ID of the Asset",
+          "name": "X-Account-Id",
+          "in": "header",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Account ID of the Asset",
+          "name": "accountId",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/accounts/{accountId}/assets/{assetId}": {
+      "get": {
+        "description": "Retrieve an Asset by ID",
+        "tags": [
+          "account"
+        ],
+        "summary": "Get Asset",
+        "operationId": "viewAsset",
+        "responses": {
+          "200": {
+            "description": "Asset",
+            "schema": {
+              "$ref": "#/definitions/asset_view"
+            },
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Parent Tenant ID",
+          "name": "X-Tenant-Id",
+          "in": "header",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Account ID of the Asset",
+          "name": "X-Account-Id",
+          "in": "header",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Account ID of the Asset",
+          "name": "accountId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Asset",
+          "name": "assetId",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/servicegroups/{serviceGroupId}": {
+      "get": {
+        "description": "Retrieves a Servicegroup by ID",
+        "tags": [
+          "servicegroup"
+        ],
+        "summary": "View Servicegroup",
+        "operationId": "viewServiceGroup",
+        "responses": {
+          "200": {
+            "description": "Servicegroup",
+            "schema": {
+              "$ref": "#/definitions/service_group_view"
+            },
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Removes a Servicegroup after verifying if all associated resources have already been removed.",
+        "tags": [
+          "servicegroup"
+        ],
+        "summary": "Delete Servicegroup",
+        "operationId": "deleteServiceGroup",
+        "responses": {
+          "204": {
+            "description": "Servicegroup Deleted",
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "409": {
+            "$ref": "#/responses/409"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "patch": {
+        "description": "Applies changes to a Servicegroup",
+        "consumes": [
+          "application/vnd.cia.v1+json"
+        ],
+        "tags": [
+          "servicegroup"
+        ],
+        "summary": "Update Servicegroup",
+        "operationId": "updateServiceGroup",
+        "parameters": [
+          {
+            "description": "Partial body of Servicegroup",
+            "name": "service group",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/service_group_partial"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Servicegroup Updated",
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "409": {
+            "$ref": "#/responses/409"
+          },
+          "422": {
+            "$ref": "#/responses/422"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Service Unit",
+          "name": "serviceGroupId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier associated with Tenant",
+          "name": "X-Tenant-Id",
+          "in": "header",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier associated with Servicegroup",
+          "name": "X-SG-Id",
+          "in": "header",
+          "required": true
+        }
+      ]
+    },
+    "/servicegroups/{servicegroupId}/resources": {
+      "get": {
+        "description": "Retrieves a filtered list of resources within a specific Servicegroup. The default filter is based on authenticated user access.\nEach additional filter will reduce the result list further.\n\nTo reduce the overall size of the response payload the fields can be limited.\n",
+        "tags": [
+          "servicegroup"
+        ],
+        "summary": "List Resources",
+        "operationId": "getResources",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Search Resources by name",
+            "name": "name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Search Resources by service name",
+            "name": "service_name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Search Resources by service region",
+            "name": "service_region",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Search Resources by service version",
+            "name": "service_version",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "NEW",
+              "ACTIVE",
+              "FAILED"
+            ],
+            "type": "string",
+            "description": "Search Resources by status",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters the fields in each returned record. (comma-delimited)",
+            "name": "fields",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Max number of records to return.",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Segment of records to return incremented by limit.",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "pattern": "^[-]?[\\w.]+$",
+              "type": "string"
+            },
+            "description": "Sort by fields that determines the order of the results. (comma-delimited)",
+            "name": "sort",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of Tenant Resources",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/resource_view"
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier associated with Tenant",
+          "name": "X-Tenant-Id",
+          "in": "header",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier associated with Servicegroup",
+          "name": "X-SG-Id",
+          "in": "header",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Servicegroup",
+          "name": "servicegroupId",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/servicegroups/{servicegroupId}/resources/{resourceId}": {
+      "get": {
+        "description": "Retrieve a Resource by ID",
+        "tags": [
+          "servicegroup"
+        ],
+        "summary": "View Resource",
+        "operationId": "viewResource",
+        "responses": {
+          "200": {
+            "description": "Resource",
+            "schema": {
+              "$ref": "#/definitions/resource_view"
+            },
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "put": {
+        "description": "Move Resource",
+        "consumes": [
+          "application/vnd.cia.v1+json"
+        ],
+        "tags": [
+          "servicegroup"
+        ],
+        "summary": "Move Resource",
+        "operationId": "moveResource",
+        "parameters": [
+          {
+            "description": "Move body of resource",
+            "name": "resource",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/resource_move"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Resource moved",
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "402": {
+            "$ref": "#/responses/402"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "409": {
+            "$ref": "#/responses/409"
+          },
+          "422": {
+            "$ref": "#/responses/422"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier associated with Tenant",
+          "name": "X-Tenant-Id",
+          "in": "header",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier associated with Servicegroup",
+          "name": "X-SG-Id",
+          "in": "header",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Servicegroup",
+          "name": "servicegroupId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Resource",
+          "name": "resourceId",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/tenants": {
+      "get": {
+        "description": "Retrieves a filtered list of tenants. The default filter is based on authenticated user access.\nEach additional filter will reduce the result list further.\n\nTo reduce the overall size of the response payload the fields can be limited.\n",
+        "tags": [
+          "tenant"
+        ],
+        "summary": "List Tenants",
+        "operationId": "listTenants",
+        "parameters": [
+          {
+            "minLength": 3,
+            "type": "string",
+            "description": "List Tenants by name",
+            "name": "name",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "ACTIVE"
+            ],
+            "type": "string",
+            "description": "List Tenants by status",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "type": "boolean",
+            "description": "List Tenants by funded flag",
+            "name": "funded",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters the fields in each returned record. (comma-delimited)",
+            "name": "fields",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "default": 50,
+            "description": "Max number of records to return.",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Segment of records to return incremented by limit.",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "pattern": "^[-]?[\\w.]+$",
+              "type": "string"
+            },
+            "description": "Sort by fields that determines the order of the results. (comma-delimited)",
+            "name": "sort",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List all Tenants matching the specified criteria",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/tenant_view"
+              }
+            },
+            "headers": {
+              "Link": {
+                "type": "string",
+                "description": "Pagination links"
+              },
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              },
+              "X-Total-Count": {
+                "type": "integer",
+                "format": "int64",
+                "description": "Total number of results (if known)"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "post": {
+        "description": "Adds a Tenant that is the main entity for managing cloud resources based on budget allocation and user authorization.\nEach enterprise/department can have more than one tenant.\n",
+        "consumes": [
+          "application/vnd.cia.v1+json"
+        ],
+        "tags": [
+          "tenant"
+        ],
+        "summary": "Add Tenant",
+        "operationId": "addTenant",
+        "parameters": [
+          {
+            "description": "Tenant details",
+            "name": "tenant",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/tenant"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Tenant Added",
+            "headers": {
+              "Location": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL to the newly added Tenant"
+              },
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "409": {
+            "$ref": "#/responses/409"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      }
+    },
+    "/tenants/search": {
+      "get": {
+        "description": "Retrieves a filtered search of tenants. filter will reduce the result list further.\n at-least one query filter is required.\n To reduce the overall size of the response payload the fields can be limited.\n",
+        "tags": [
+          "tenant"
+        ],
+        "summary": "Search Tenants",
+        "operationId": "searchTenants",
+        "parameters": [
+          {
+            "minLength": 3,
+            "type": "string",
+            "description": "Search Tenants by name",
+            "name": "name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Search Tenants by department_id",
+            "name": "department_id",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Search records by Business Application Name",
+            "name": "bas_name",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Max number of records to return.",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Segment of records to return incremented by limit.",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "pattern": "^[-]?[\\w.]+$",
+              "type": "string"
+            },
+            "description": "Sort by fields that determines the order of the results. (comma-delimited)",
+            "name": "sort",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search Tenants matching the specified criteria",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/tenant_view_minimal"
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      }
+    },
+    "/tenants/{tenantId}": {
+      "get": {
+        "description": "Retrieves a Tenant by ID",
+        "tags": [
+          "tenant"
+        ],
+        "summary": "View Tenant",
+        "operationId": "viewTenant",
+        "responses": {
+          "200": {
+            "description": "Tenant",
+            "schema": {
+              "$ref": "#/definitions/tenant_view"
+            },
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Removes a Tenant after verifying that all associated entities have been removed. ex. servicegroups, fundings, resources",
+        "tags": [
+          "tenant"
+        ],
+        "summary": "Delete Tenant",
+        "operationId": "deleteTenant",
+        "responses": {
+          "204": {
+            "description": "Tenant Deleted",
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "409": {
+            "$ref": "#/responses/409"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "patch": {
+        "description": "Applies changes to a Tenant.",
+        "consumes": [
+          "application/vnd.cia.v1+json"
+        ],
+        "tags": [
+          "tenant"
+        ],
+        "summary": "Update Tenant",
+        "operationId": "updateTenant",
+        "parameters": [
+          {
+            "description": "Body of Tenant",
+            "name": "tenant",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/tenant_partial"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Tenant",
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "409": {
+            "$ref": "#/responses/409"
+          },
+          "422": {
+            "$ref": "#/responses/422"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Tenant",
+          "name": "tenantId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier associated with Tenant",
+          "name": "X-Tenant-Id",
+          "in": "header",
+          "required": true
+        }
+      ]
+    },
+    "/tenants/{tenantId}/accounts": {
+      "get": {
+        "description": "Retrieves a filtered list of accounts. The default filter is based on authenticated user access.\nEach additional filter will reduce the result list further.\n\nTo reduce the overall size of the response payload the fields can be limited.\n",
+        "tags": [
+          "tenant"
+        ],
+        "summary": "List Accounts",
+        "operationId": "listAccounts",
+        "parameters": [
+          {
+            "enum": [
+              "AWS",
+              "GCP",
+              "AZURE"
+            ],
+            "type": "string",
+            "description": "Search accounts by provider",
+            "name": "provider",
+            "in": "query"
+          },
+          {
+            "minLength": 3,
+            "type": "string",
+            "description": "Search Accounts by name",
+            "name": "name",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "ACTIVE",
+              "FAILED",
+              "NEW",
+              "SUSPENDED"
+            ],
+            "type": "string",
+            "description": "Search Accounts by status",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters the fields in each returned record. (comma-delimited)",
+            "name": "fields",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Max number of records to return.",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Segment of records to return incremented by limit.",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "pattern": "^[-]?[\\w.]+$",
+              "type": "string"
+            },
+            "description": "Sort by fields that determines the order of the results. (comma-delimited)",
+            "name": "sort",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List all Accounts matching the specified criteria",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/account_view"
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Tenant",
+          "name": "tenantId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier associated with Tenant",
+          "name": "X-Tenant-Id",
+          "in": "header",
+          "required": true
+        }
+      ]
+    },
+    "/tenants/{tenantId}/accounts/{accountId}": {
+      "get": {
+        "description": "Retrieves an Account by ID",
+        "tags": [
+          "tenant"
+        ],
+        "summary": "View Account",
+        "operationId": "viewAccount",
+        "responses": {
+          "200": {
+            "description": "Account",
+            "schema": {
+              "$ref": "#/definitions/account_view"
+            },
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "put": {
+        "description": "Move an Account across Tenants.",
+        "consumes": [
+          "application/vnd.cia.v1+json"
+        ],
+        "tags": [
+          "tenant"
+        ],
+        "summary": "Move Account",
+        "operationId": "moveAccount",
+        "parameters": [
+          {
+            "description": "Account move target details",
+            "name": "account move",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/account_move"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Account Moved",
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "402": {
+            "$ref": "#/responses/402"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Account",
+          "name": "accountId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Tenant",
+          "name": "tenantId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier associated with Tenant",
+          "name": "X-Tenant-Id",
+          "in": "header",
+          "required": true
+        }
+      ]
+    },
+    "/tenants/{tenantId}/budgets": {
+      "get": {
+        "description": "Retrieves a composite view of all Tenant Fundings (aka Budget).",
+        "tags": [
+          "tenant"
+        ],
+        "summary": "View Tenant Budget",
+        "operationId": "viewBudget",
+        "responses": {
+          "200": {
+            "description": "Tenant budget",
+            "schema": {
+              "$ref": "#/definitions/budget_view"
+            },
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Tenant",
+          "name": "tenantId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Tenant",
+          "name": "X-Tenant-Id",
+          "in": "header",
+          "required": true
+        }
+      ]
+    },
+    "/tenants/{tenantId}/funds": {
+      "get": {
+        "description": "Retrieves a filtered list of fundings within a specific tenant. The default filter is based on authenticated user access.\nEach additional filter will reduce the result list further.\n\nTo reduce the overall size of the response payload the fields can be limited.\n",
+        "tags": [
+          "tenant"
+        ],
+        "summary": "List Tenant Fundings",
+        "operationId": "getFundings",
+        "parameters": [
+          {
+            "enum": [
+              "NEW",
+              "ACTIVE",
+              "PENDING_APPROVAL"
+            ],
+            "type": "string",
+            "description": "Search records by status",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "central-it",
+              "department"
+            ],
+            "type": "string",
+            "description": "Search records by funding type",
+            "name": "type",
+            "in": "query"
+          },
+          {
+            "minLength": 3,
+            "type": "string",
+            "description": "Search records by Bill to Department",
+            "name": "bill_to_department",
+            "in": "query"
+          },
+          {
+            "minLength": 3,
+            "type": "string",
+            "description": "Search records by Financial Analyst",
+            "name": "financial_analyst",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters the fields in each returned record. (comma-delimited)",
+            "name": "fields",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Max number of records to return.",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Segment of records to return incremented by limit.",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "pattern": "^[-]?[\\w.]+$",
+              "type": "string"
+            },
+            "description": "Sort by fields that determines the order of the results. (comma-delimited)",
+            "name": "sort",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of Tenant Fundings",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/funding_view"
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "post": {
+        "description": "Adds Funding source (Central, Department Cross-charge)",
+        "consumes": [
+          "application/vnd.cia.v1+json"
+        ],
+        "tags": [
+          "tenant"
+        ],
+        "summary": "Add Funding",
+        "operationId": "addFunding",
+        "parameters": [
+          {
+            "description": "Body of Funding",
+            "name": "funding",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/funding"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Funding Added",
+            "headers": {
+              "Location": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL to the newly added Funding"
+              },
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "409": {
+            "$ref": "#/responses/409"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Tenant",
+          "name": "tenantId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Tenant",
+          "name": "X-Tenant-Id",
+          "in": "header",
+          "required": true
+        }
+      ]
+    },
+    "/tenants/{tenantId}/funds/{fundId}": {
+      "get": {
+        "description": "Retrieves a Funding by ID",
+        "tags": [
+          "tenant"
+        ],
+        "summary": "View Funding",
+        "operationId": "viewFund",
+        "responses": {
+          "200": {
+            "description": "Funding",
+            "schema": {
+              "$ref": "#/definitions/funding_view"
+            },
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "description": "Removes Funding after verifying the Tenant has enough fundings to cover any existing resources.",
+        "tags": [
+          "tenant"
+        ],
+        "summary": "Delete Funding",
+        "operationId": "deleteFund",
+        "responses": {
+          "204": {
+            "description": "Funding Deleted",
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "409": {
+            "$ref": "#/responses/409"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "patch": {
+        "description": "Allows a Tenant Admin to modify a funding by submitting a request to increase amount or change associated department.\n\nAllows a Funding Admin to approve or reject a request.\n",
+        "consumes": [
+          "application/vnd.cia.v1+json"
+        ],
+        "tags": [
+          "tenant"
+        ],
+        "summary": "Update Funding",
+        "operationId": "updateFund",
+        "parameters": [
+          {
+            "description": "Partial body of Funding",
+            "name": "fund",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/funding_partial"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Funding",
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "409": {
+            "$ref": "#/responses/409"
+          },
+          "422": {
+            "$ref": "#/responses/422"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier associated with Tenant",
+          "name": "X-Tenant-Id",
+          "in": "header",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Tenant",
+          "name": "tenantId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Resource",
+          "name": "fundId",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/tenants/{tenantId}/roles": {
+      "post": {
+        "description": "Request a role on Tenant",
+        "consumes": [
+          "application/vnd.cia.v1+json"
+        ],
+        "tags": [
+          "tenant"
+        ],
+        "summary": "Request a role on Tenant",
+        "operationId": "requestTenantRole",
+        "parameters": [
+          {
+            "description": "Body of Role",
+            "name": "role",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant role requested",
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier associated with Tenant",
+          "name": "tenantId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier associated with Tenant",
+          "name": "X-Tenant-Id",
+          "in": "header",
+          "required": true
+        }
+      ]
+    },
+    "/tenants/{tenantId}/servicegroups": {
+      "get": {
+        "description": "Retrieves a filtered list of Servicegroups within a specific tenant. The default filter is based on authenticated user access.\nEach additional filter will reduce the result list further.\n\nTo reduce the overall size of the response payload the fields can be limited.\n",
+        "tags": [
+          "tenant"
+        ],
+        "summary": "List Servicegroups",
+        "operationId": "getServiceGroups",
+        "parameters": [
+          {
+            "minLength": 3,
+            "type": "string",
+            "description": "Search Servicegroups by name",
+            "name": "name",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "ACTIVE"
+            ],
+            "type": "string",
+            "description": "Search Servicegroups by status",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filters the fields in each returned record. (comma-delimited)",
+            "name": "fields",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Max number of records to return.",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Segment of records to return incremented by limit.",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "pattern": "^[-]?[\\w.]+$",
+              "type": "string"
+            },
+            "description": "Sort by fields that determines the order of the results. (comma-delimited)",
+            "name": "sort",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of Servicegroups",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/service_group_view"
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "post": {
+        "description": "Creates a new Service Group to provide a logical grouping of resources within a Tenant.\nUse Service Group to manage infrastructure and access in the context of a resource grouping.\n",
+        "consumes": [
+          "application/vnd.cia.v1+json"
+        ],
+        "tags": [
+          "tenant"
+        ],
+        "summary": "Add Servicegroup",
+        "operationId": "addServiceGroup",
+        "parameters": [
+          {
+            "description": "Body of Servicegroup",
+            "name": "service group",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/service_group"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Servicegroup Added",
+            "headers": {
+              "Location": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL to the newly added Servicegroup"
+              },
+              "X-Request-Id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Unique identifier associated with request"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "404": {
+            "$ref": "#/responses/404"
+          },
+          "409": {
+            "$ref": "#/responses/409"
+          },
+          "default": {
+            "$ref": "#/responses/500"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for Tenant",
+          "name": "tenantId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier associated with Tenant",
+          "name": "X-Tenant-Id",
+          "in": "header",
+          "required": true
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "account_move": {
+      "description": "Details for moving an Account.",
+      "type": "object",
+      "title": "Account Move Details",
+      "required": [
+        "tenant_id"
+      ],
+      "properties": {
+        "tenant_id": {
+          "description": "Unique identifier of the target Tenant",
+          "type": "string",
+          "format": "uuid",
+          "title": "Target Tenant Identifier",
+          "example": "4568f6e7-dd55-4639-bc67-65646fde2dhc"
+        }
+      }
+    },
+    "account_view": {
+      "description": "View of Account",
+      "type": "object",
+      "title": "Account View",
+      "properties": {
+        "audit": {
+          "$ref": "#/definitions/audit"
+        },
+        "cost": {
+          "description": "Cost of Account",
+          "type": "number",
+          "format": "double",
+          "title": "Account Cost",
+          "example": 70.56
+        },
+        "id": {
+          "description": "Unique identifier for the Account",
+          "type": "string",
+          "format": "uuid",
+          "title": "Account Identifier",
+          "example": "5677f6e7-dd55-4639-bc67-65646fde2dhc"
+        },
+        "metadata": {
+          "description": "Metadata associated with the Account",
+          "type": "object",
+          "title": "Metadata",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "name": {
+          "description": "Name of the Account",
+          "type": "string",
+          "title": "Account Name",
+          "example": "Example Account"
+        },
+        "provider": {
+          "description": "Provider for the Account",
+          "type": "string",
+          "title": "Account Provider",
+          "enum": [
+            "AWS",
+            "GCP",
+            "AZURE"
+          ],
+          "example": "AWS"
+        },
+        "status": {
+          "description": "Operational status for the Account",
+          "type": "string",
+          "title": "Account Operational Status",
+          "enum": [
+            "ACTIVE",
+            "FAILED",
+            "NEW",
+            "SUSPENDED"
+          ],
+          "example": "ACTIVE"
+        },
+        "tags": {
+          "description": "Tags associated with the Account",
+          "type": "array",
+          "title": "Tags",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "foo",
+            "bar"
+          ]
+        },
+        "tenant_id": {
+          "description": "Unique identifier for the Tenant",
+          "type": "string",
+          "format": "uuid",
+          "title": "Tenant Identifier",
+          "example": "4568f6e7-dd55-4639-bc67-65646fde2dhc"
+        },
+        "transactional_status": {
+          "description": "Transactional status for the Account",
+          "type": "string",
+          "title": "Account Transactional Status",
+          "example": "CREATING"
+        },
+        "user_attribution": {
+          "$ref": "#/definitions/user_attribution"
+        }
+      }
+    },
+    "application_portfolio": {
+      "description": "MCMP Tenant to Application Portfolio mapping (in ESP)",
+      "type": "object",
+      "title": "Application Portfolio",
+      "properties": {
+        "application_instance_id": {
+          "description": "Application Instance ID in ESP",
+          "type": "string",
+          "title": "Application Instance ID"
+        },
+        "application_instance_name": {
+          "description": "Application Instance Name in ESP",
+          "type": "string",
+          "title": "Application Instance Name"
+        },
+        "business_application_id": {
+          "description": "Business Application ID in ESP",
+          "type": "string",
+          "title": "Business Application ID"
+        },
+        "business_application_name": {
+          "description": "Business Application Name in ESP",
+          "type": "string",
+          "title": "Business Application Name"
+        },
+        "cluster_id": {
+          "description": "ESP Cluster ID in ESP",
+          "type": "string",
+          "title": "ESP Cluster ID",
+          "readOnly": true
+        },
+        "cluster_name": {
+          "description": "ESP Cluster Name in ESP",
+          "type": "string",
+          "title": "ESP Cluster Name",
+          "readOnly": true
+        }
+      }
+    },
+    "asset_view": {
+      "description": "View of Asset",
+      "type": "object",
+      "title": "Asset View",
+      "properties": {
+        "account_id": {
+          "description": "Unique identifier for the Account",
+          "type": "string",
+          "format": "uuid",
+          "title": "Account Identifier",
+          "readOnly": true,
+          "example": "8677f6e7-dd55-4639-bc54-65646fde2adc"
+        },
+        "audit": {
+          "$ref": "#/definitions/audit"
+        },
+        "cost": {
+          "description": "Total quarterly cost of an Asset",
+          "type": "number",
+          "format": "double",
+          "title": "Total Quarterly Asset Cost",
+          "readOnly": true,
+          "example": 10.64
+        },
+        "cost_updated_at": {
+          "description": "Timestamp when the cost updated",
+          "type": "string",
+          "format": "date-time",
+          "title": "Cost Updated At",
+          "readOnly": true
+        },
+        "id": {
+          "description": "Unique identifier for the Asset",
+          "type": "string",
+          "format": "uuid",
+          "title": "Asset Identifier",
+          "readOnly": true,
+          "example": "8477f6e7-ee55-4639-bc54-32786fde2the"
+        },
+        "metadata": {
+          "description": "Metadata associated with the Asset",
+          "type": "object",
+          "title": "Metadata",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "readOnly": true
+        },
+        "name": {
+          "description": "Name of the underlying Asset",
+          "type": "string",
+          "title": "Asset Name",
+          "readOnly": true,
+          "example": "Example asset"
+        },
+        "service_location": {
+          "description": "Location of the Service",
+          "type": "string",
+          "title": "Service Location",
+          "readOnly": true,
+          "example": "AZ01"
+        },
+        "service_name": {
+          "description": "Type of the underlying Asset",
+          "type": "string",
+          "title": "Asset Type",
+          "readOnly": true,
+          "example": "SCI Asset"
+        },
+        "service_region": {
+          "description": "Region Service is located in",
+          "type": "string",
+          "title": "Service Region",
+          "readOnly": true,
+          "example": "Region1"
+        },
+        "service_version": {
+          "description": "Version identifier for the Service",
+          "type": "string",
+          "title": "Service Version",
+          "readOnly": true,
+          "example": "0.0.1"
+        },
+        "status": {
+          "description": "Operational status for the Asset",
+          "type": "string",
+          "title": "Operational Asset Status",
+          "enum": [
+            "NEW",
+            "ACTIVE",
+            "FAILED"
+          ],
+          "readOnly": true,
+          "example": "ACTIVE"
+        },
+        "tags": {
+          "description": "Tags associated with the Asset",
+          "type": "array",
+          "title": "Tags",
+          "items": {
+            "type": "string",
+            "readOnly": true
+          },
+          "example": [
+            "foo",
+            "bar"
+          ]
+        },
+        "tenant_id": {
+          "description": "Unique identifier for the Tenant",
+          "type": "string",
+          "format": "uuid",
+          "title": "Tenant Identifier",
+          "readOnly": true,
+          "example": "8377f6e7-dd55-4639-bc54-65646fde2adc"
+        },
+        "transactional_status": {
+          "description": "Transactional status for the Asset",
+          "type": "string",
+          "title": "Asset Transactional Status",
+          "example": "CREATING"
+        }
+      }
+    },
+    "audit": {
+      "description": "Audit trail details",
+      "type": "object",
+      "title": "Audit",
+      "properties": {
+        "created_at": {
+          "description": "Timestamp when the record was created",
+          "type": "string",
+          "format": "date-time",
+          "title": "Created At",
+          "readOnly": true
+        },
+        "created_by": {
+          "description": "Identity that created the record",
+          "type": "string",
+          "title": "Created By",
+          "readOnly": true,
+          "example": "user-cec"
+        },
+        "updated_at": {
+          "description": "Timestamp when the record was last updated",
+          "type": "string",
+          "format": "date-time",
+          "title": "Updated At",
+          "readOnly": true
+        },
+        "updated_by": {
+          "description": "Entity that updated the record",
+          "type": "string",
+          "title": "Updated By",
+          "readOnly": true,
+          "example": "user-cec"
+        }
+      }
+    },
+    "budget_view": {
+      "description": "Tenant Budget view",
+      "type": "object",
+      "title": "Budget View",
+      "properties": {
+        "available": {
+          "description": "Available Limit",
+          "type": "number",
+          "format": "double",
+          "title": "Available Limit",
+          "x-omitempty": false,
+          "example": 100.64
+        },
+        "available_central": {
+          "description": "Available central-IT funding",
+          "type": "number",
+          "format": "double",
+          "title": "Available Central IT Funding",
+          "x-omitempty": false,
+          "example": 100.64
+        },
+        "available_department": {
+          "description": "Available department funding",
+          "type": "number",
+          "format": "double",
+          "title": "Available Department Funding",
+          "x-omitempty": false,
+          "example": 100.64
+        },
+        "hard_limit": {
+          "description": "Total Hard Limit",
+          "type": "number",
+          "format": "double",
+          "title": "Total Hard Limit",
+          "x-omitempty": false,
+          "example": 120.64
+        },
+        "limit": {
+          "description": "Total Soft Limit",
+          "type": "integer",
+          "title": "Total Soft Limit",
+          "x-omitempty": false,
+          "example": 10000
+        },
+        "projected_on": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Date when the projection was made",
+          "x-nullable": true,
+          "example": "2018-03-20T09:12:28Z"
+        },
+        "quarterly_cost_total": {
+          "description": "Cost of the Resources for the entire quarter",
+          "type": "number",
+          "format": "double",
+          "title": "Total Quarterly Resources Cost",
+          "x-omitempty": false,
+          "example": 120.35
+        },
+        "quarterly_cost_total_central": {
+          "description": "Cost of the Resources for the entire quarter charged to central-IT",
+          "type": "number",
+          "format": "double",
+          "title": "Total Quarterly Central IT Resource Cost",
+          "x-omitempty": false,
+          "example": 120.35
+        },
+        "quarterly_cost_total_dept": {
+          "description": "Cost of the Resources for the entire quarter charged to the department",
+          "type": "number",
+          "format": "double",
+          "title": "Total Quarterly Department Resource Cost",
+          "x-omitempty": false,
+          "example": 120.35
+        },
+        "quarterly_projected_spend": {
+          "description": "Total Quarterly Projected Amount for Tenant",
+          "type": "number",
+          "format": "double",
+          "title": "Total Quarterly Tenant Projected Spend",
+          "x-omitempty": true,
+          "example": 120.35
+        }
+      }
+    },
+    "cross_charge_funds": {
+      "description": "Department Cross Charge Funding",
+      "type": "object",
+      "title": "Cross Charge Funding",
+      "properties": {
+        "bill_to_department": {
+          "description": "Bill To Department Id for this funding",
+          "type": "string",
+          "title": "Bill To Department Id",
+          "readOnly": true,
+          "example": 4224686
+        },
+        "financial_analyst": {
+          "description": "Financial Analyst for this funding",
+          "type": "string",
+          "title": "financial Analyst",
+          "readOnly": true,
+          "example": "rkucheka"
+        },
+        "requested_bill_to_department": {
+          "description": "Requsted Bill To Department Id",
+          "type": "string",
+          "title": "Bill To Department Id",
+          "example": 4224686
+        }
+      }
+    },
+    "error": {
+      "description": "An error provides information about why the request failed.\n",
+      "type": "object",
+      "title": "Error",
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "description": "Code identifies a specific type of error.\n",
+          "type": "string",
+          "title": "Code"
+        },
+        "message": {
+          "description": "The message provides details about the failure.\n",
+          "type": "string",
+          "title": "Message"
+        }
+      }
+    },
+    "funding": {
+      "description": "Funding (Central or Department/Cross-Charge)",
+      "type": "object",
+      "title": "Funding",
+      "required": [
+        "requested_amount",
+        "type"
+      ],
+      "properties": {
+        "amount": {
+          "description": "Available amount",
+          "type": "integer",
+          "title": "Available Amount",
+          "readOnly": true,
+          "example": 10000
+        },
+        "audit": {
+          "$ref": "#/definitions/audit"
+        },
+        "cross_charge_funds": {
+          "$ref": "#/definitions/cross_charge_funds"
+        },
+        "id": {
+          "description": "Unique identifier for the Funding",
+          "type": "string",
+          "format": "uuid",
+          "title": "Funding Identifier",
+          "readOnly": true,
+          "example": "4477f6e7-ee55-4639-bc54-32786fde2the"
+        },
+        "justification": {
+          "description": "Justification for central-it funds exceeding 30K",
+          "type": "string",
+          "title": "Funding justification",
+          "example": "reason for justification for exceeding 30k in central-it fund"
+        },
+        "metadata": {
+          "description": "Metadata associated with the Fund",
+          "type": "object",
+          "title": "Metadata",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "requested_amount": {
+          "description": "Funding amount requested as part of update",
+          "type": "integer",
+          "title": "Requested Funding Amount",
+          "example": 25000
+        },
+        "status": {
+          "description": "Status for the Funding",
+          "type": "string",
+          "title": "Funding Status",
+          "enum": [
+            "NEW",
+            "ACTIVE",
+            "INACTIVE",
+            "PENDING_APPROVAL"
+          ],
+          "readOnly": true,
+          "example": "ACTIVE"
+        },
+        "type": {
+          "description": "Type for the Funding",
+          "type": "string",
+          "title": "Funding Type",
+          "enum": [
+            "central-it",
+            "department"
+          ],
+          "example": "central-it"
+        }
+      }
+    },
+    "funding_partial": {
+      "description": "Partial body of funding",
+      "type": "object",
+      "title": "Partial Funding View",
+      "properties": {
+        "cross_charge_funds": {
+          "$ref": "#/definitions/cross_charge_funds"
+        },
+        "justification": {
+          "description": "Justification for central-it funds exceeding 30K",
+          "type": "string",
+          "title": "Funding justification",
+          "example": "reason for justification for exceeding 30k in central-it fund"
+        },
+        "metadata": {
+          "description": "Metadata associated with the fund",
+          "type": "object",
+          "title": "Metadata",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "requested_amount": {
+          "description": "Funding amount requested as part of update",
+          "type": "integer",
+          "title": "Requested Funding Amount",
+          "minimum": 0,
+          "example": 10000
+        },
+        "status": {
+          "description": "Cancel fund as a part of update",
+          "type": "string",
+          "title": "Funding status",
+          "enum": [
+            "CANCELED"
+          ],
+          "example": "CANCELED"
+        }
+      }
+    },
+    "funding_view": {
+      "description": "Funding (Central or Department/Cross-Charge)",
+      "type": "object",
+      "title": "Funding View",
+      "properties": {
+        "amount": {
+          "description": "Funding amount",
+          "type": "integer",
+          "title": "Funding Amount",
+          "example": 10000
+        },
+        "approval_notes": {
+          "description": "Notes to elaborate approval/rejection reasons",
+          "type": "string",
+          "title": "Funding approval notes",
+          "example": "Rejected due to higher requested amount"
+        },
+        "audit": {
+          "$ref": "#/definitions/audit"
+        },
+        "available": {
+          "description": "Available amount",
+          "type": "number",
+          "format": "double",
+          "title": "Available Amount",
+          "example": 100.64
+        },
+        "cross_charge_funds": {
+          "$ref": "#/definitions/cross_charge_funds"
+        },
+        "id": {
+          "description": "Unique identifier for the Resource",
+          "type": "string",
+          "format": "uuid",
+          "title": "Resource Identifier",
+          "readOnly": true,
+          "example": "4477f6e7-ee55-4639-bc54-32786fde2the"
+        },
+        "metadata": {
+          "description": "Metadata associated with the fund",
+          "type": "object",
+          "title": "Metadata",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "readOnly": true
+        },
+        "requested_amount": {
+          "description": "Funding amount requested as part of update",
+          "type": "integer",
+          "title": "Requested Funding Amount",
+          "example": 25000
+        },
+        "status": {
+          "description": "Status for the Resource",
+          "type": "string",
+          "title": "Funding Status",
+          "enum": [
+            "NEW",
+            "ACTIVE",
+            "FAILED",
+            "PENDING_APPROVAL"
+          ],
+          "readOnly": true,
+          "example": "ACTIVE"
+        },
+        "type": {
+          "description": "Type for the funding",
+          "type": "string",
+          "title": "Funding Type",
+          "enum": [
+            "central-it",
+            "department"
+          ],
+          "example": "ACTIVE"
+        }
+      }
+    },
+    "resource_move": {
+      "description": "A Resource Move",
+      "type": "object",
+      "title": "Move Resource",
+      "required": [
+        "tenant_id",
+        "servicegroup_id"
+      ],
+      "properties": {
+        "servicegroup_id": {
+          "description": "Unique identifier for the new Servicegroup",
+          "type": "string",
+          "format": "uuid",
+          "title": "Service Group Identifier",
+          "example": "3377f6e7-dd55-4639-bc54-65646fde2adc"
+        },
+        "tenant_id": {
+          "description": "Unique identifier for the new Tenant",
+          "type": "string",
+          "format": "uuid",
+          "title": "Tenant Identifier",
+          "example": "3377f6e7-dd55-4639-bc54-65646fde2adc"
+        }
+      }
+    },
+    "resource_view": {
+      "description": "View of Resources",
+      "type": "object",
+      "title": "Resource View",
+      "properties": {
+        "application_portfolio": {
+          "$ref": "#/definitions/application_portfolio"
+        },
+        "audit": {
+          "$ref": "#/definitions/audit"
+        },
+        "cost": {
+          "description": "Total quarterly cost of a Resource",
+          "type": "number",
+          "format": "double",
+          "title": "Total Quarterly Resource Cost",
+          "example": 10.64
+        },
+        "cost_updated_at": {
+          "description": "Timestamp when the cost updated",
+          "type": "string",
+          "format": "date-time",
+          "title": "Cost Updated At"
+        },
+        "id": {
+          "description": "Unique identifier for the Resource",
+          "type": "string",
+          "format": "uuid",
+          "title": "Resource Identifier",
+          "readOnly": true,
+          "example": "4477f6e7-ee55-4639-bc54-32786fde2the"
+        },
+        "metadata": {
+          "description": "Metadata associated with the Resource",
+          "type": "object",
+          "title": "Metadata",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "name": {
+          "description": "Name of the underlying Resource",
+          "type": "string",
+          "title": "Resource Name",
+          "example": "Example Resource"
+        },
+        "quarterly_cost": {
+          "description": "Quarterly Cost of a Resource",
+          "type": "number",
+          "format": "double",
+          "title": "Quarterly Resource Cost",
+          "example": 50.13
+        },
+        "service_group_id": {
+          "description": "Unique identifier for the Servicegroup",
+          "type": "string",
+          "format": "uuid",
+          "title": "Service Group Identifier",
+          "readOnly": true,
+          "example": "4677f6e7-dd55-4639-bc54-65646fde2adc"
+        },
+        "service_location": {
+          "description": "Location of the Service",
+          "type": "string",
+          "title": "Service Location",
+          "example": "AZ01"
+        },
+        "service_name": {
+          "description": "Type of the underlying Resource",
+          "type": "string",
+          "title": "Resource Type",
+          "example": "Openstack Project"
+        },
+        "service_region": {
+          "description": "Region Service is located in",
+          "type": "string",
+          "title": "Service Region",
+          "example": "Region1"
+        },
+        "service_version": {
+          "description": "Version identifier for the Service",
+          "type": "string",
+          "title": "Service Version",
+          "example": "0.0.1"
+        },
+        "status": {
+          "description": "Operational status for the Resource",
+          "type": "string",
+          "title": "Resource Operational Status",
+          "enum": [
+            "NEW",
+            "ACTIVE",
+            "FAILED"
+          ],
+          "example": "ACTIVE"
+        },
+        "tags": {
+          "description": "Tags associated with the Resource",
+          "type": "array",
+          "title": "Tags",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "foo",
+            "bar"
+          ]
+        },
+        "tenant_id": {
+          "description": "Unique identifier for the Tenant",
+          "type": "string",
+          "format": "uuid",
+          "title": "Tenant Identifier",
+          "readOnly": true,
+          "example": "3377f6e7-dd55-4639-bc54-65646fde2adc"
+        },
+        "transactional_status": {
+          "description": "Transactional status for the Resource",
+          "type": "string",
+          "title": "Resource Transactional Status",
+          "example": "CREATING"
+        }
+      }
+    },
+    "roles": {
+      "description": "Role described for a tenant user",
+      "type": "object",
+      "title": "Tenant user role",
+      "required": [
+        "role",
+        "justification"
+      ],
+      "properties": {
+        "bas_name": {
+          "description": "Role added for business application of tenant",
+          "type": "string",
+          "title": "Business Application",
+          "example": "Business Application"
+        },
+        "department_id": {
+          "description": "Role added for department id of tenant",
+          "type": "string",
+          "title": "Department ID",
+          "example": "0023421"
+        },
+        "justification": {
+          "description": "Justification for user adding tenant role",
+          "type": "string",
+          "title": "Role justification",
+          "example": "reason for user adding role for tenant"
+        },
+        "role": {
+          "description": "Unique identifier for the user role",
+          "type": "string",
+          "title": "Role Identifier",
+          "enum": [
+            "tenant:view",
+            "tenant:operator",
+            "tenant:admin"
+          ]
+        }
+      }
+    },
+    "service_group": {
+      "description": "The logical grouping of Resources.",
+      "type": "object",
+      "title": "Service Group",
+      "required": [
+        "name",
+        "lifecycle"
+      ],
+      "properties": {
+        "application_portfolio": {
+          "$ref": "#/definitions/application_portfolio"
+        },
+        "audit": {
+          "$ref": "#/definitions/audit"
+        },
+        "description": {
+          "description": "Description for the Servicegroup",
+          "type": "string",
+          "title": "Service Group Description",
+          "example": "Servicegroup Description"
+        },
+        "epicid": {
+          "description": "EPIC ID (Program ID) for the Servicegroup",
+          "type": "string",
+          "title": "EPIC ID associated with the Service Group",
+          "example": "PR10101"
+        },
+        "id": {
+          "description": "Unique identifier for the Servicegroup",
+          "type": "string",
+          "format": "uuid",
+          "title": "Service Group Identifier",
+          "readOnly": true,
+          "example": "3377f6e7-dd55-4639-bc54-65646fde2adc"
+        },
+        "lifecycle": {
+          "description": "Lifecycle for the Servicegroup",
+          "type": "string",
+          "title": "Service Group Lifecycle",
+          "enum": [
+            "PROD",
+            "NONPROD"
+          ],
+          "example": "PROD"
+        },
+        "metadata": {
+          "description": "Metadata associated with the Servicegroup",
+          "type": "object",
+          "title": "Metadata",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "name": {
+          "description": "Name for the Servicegroup",
+          "type": "string",
+          "title": "Service Group Name",
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9-_ ]*[A-Za-z0-9]$",
+          "example": "Example Servicegroup"
+        },
+        "status": {
+          "description": "Status for the Servicegroup",
+          "type": "string",
+          "title": "Service Group Status",
+          "enum": [
+            "ACTIVE",
+            "DELETED"
+          ],
+          "readOnly": true,
+          "example": "ACTIVE"
+        },
+        "user_attribution": {
+          "$ref": "#/definitions/user_attribution"
+        }
+      }
+    },
+    "service_group_partial": {
+      "description": "The logical grouping of Resources.",
+      "type": "object",
+      "title": "Service Group",
+      "properties": {
+        "description": {
+          "description": "Description for the Servicegroup",
+          "type": "string",
+          "title": "Service Group Description",
+          "example": "Servicegroup Description"
+        },
+        "metadata": {
+          "description": "Metadata associated with the Servicegroup",
+          "type": "object",
+          "title": "Metadata",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "service_group_view": {
+      "description": "The logical grouping of Resources.",
+      "type": "object",
+      "title": "Service Group View",
+      "properties": {
+        "application_portfolio": {
+          "$ref": "#/definitions/application_portfolio"
+        },
+        "audit": {
+          "$ref": "#/definitions/audit"
+        },
+        "description": {
+          "description": "Description for the Servicegroup",
+          "type": "string",
+          "title": "Service Group Description",
+          "example": "Servicegroup Description"
+        },
+        "epicid": {
+          "description": "EPIC ID (Program ID) for the Servicegroup",
+          "type": "string",
+          "title": "EPIC ID associated with the Service Group",
+          "example": "PR10101"
+        },
+        "id": {
+          "description": "Unique identifier for the Servicegroup",
+          "type": "string",
+          "format": "uuid",
+          "title": "Service Group Identifier",
+          "readOnly": true,
+          "example": "3377f6e7-dd55-4639-bc54-65646fde2adc"
+        },
+        "lifecycle": {
+          "description": "Lifecycle for the Servicegroup",
+          "type": "string",
+          "title": "Service Group Lifecycle",
+          "enum": [
+            "PROD",
+            "NONPROD"
+          ],
+          "example": "PROD"
+        },
+        "metadata": {
+          "description": "Metadata associated with the Servicegroup",
+          "type": "object",
+          "title": "Metadata",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "name": {
+          "description": "Name for the Servicegrroup",
+          "type": "string",
+          "title": "Service Group Name",
+          "minLength": 3,
+          "example": "Example Servicegroup"
+        },
+        "status": {
+          "description": "Status for the Servicegroup",
+          "type": "string",
+          "title": "Service Group Status",
+          "enum": [
+            "ACTIVE",
+            "DELETED"
+          ],
+          "example": "ACTIVE"
+        },
+        "user_attribution": {
+          "$ref": "#/definitions/user_attribution"
+        }
+      }
+    },
+    "service_portfolio": {
+      "description": "MCMP Tenant to Service Portfolio mapping (in ESP)",
+      "type": "object",
+      "title": "Service Portfolio",
+      "required": [
+        "service_name"
+      ],
+      "properties": {
+        "asg_id": {
+          "description": "ASG ID in ESP",
+          "type": "string",
+          "title": "ASG ID",
+          "readOnly": true
+        },
+        "asg_name": {
+          "description": "ASG Name in ESP",
+          "type": "string",
+          "title": "ASG Name",
+          "readOnly": true
+        },
+        "service_id": {
+          "description": "Service ID in ESP",
+          "type": "string",
+          "title": "Service ID",
+          "readOnly": true
+        },
+        "service_name": {
+          "description": "Service Name in ESP",
+          "type": "string",
+          "title": "Service Name",
+          "minLength": 3
+        }
+      }
+    },
+    "tenant": {
+      "description": "The responsible party for the associated resources.",
+      "type": "object",
+      "title": "Tenant",
+      "required": [
+        "name",
+        "admins"
+      ],
+      "properties": {
+        "admins": {
+          "description": "List of admins",
+          "type": "array",
+          "title": "Admins",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "mcmp-admin"
+          ]
+        },
+        "audit": {
+          "$ref": "#/definitions/audit"
+        },
+        "csp": {
+          "description": "Is Cloud Service Provider",
+          "type": "boolean",
+          "title": "Cloud Service Provider",
+          "default": false,
+          "readOnly": true
+        },
+        "description": {
+          "description": "Description for the Tenant",
+          "type": "string",
+          "title": "Tenant Description",
+          "example": "Tenant Description"
+        },
+        "id": {
+          "description": "Unique identifier for the Tenant",
+          "type": "string",
+          "format": "uuid",
+          "title": "Tenant Identifier",
+          "readOnly": true,
+          "example": "3377f6e7-dd55-4639-bc54-65646fde2adc"
+        },
+        "name": {
+          "description": "Name for the Tenant",
+          "type": "string",
+          "title": "Tenant Name",
+          "minLength": 3,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9-_ ]*[A-Za-z0-9]$",
+          "example": "Example Tenant"
+        },
+        "preferences": {
+          "description": "Preferences associated with the tenant",
+          "type": "object",
+          "title": "Preferences",
+          "additionalProperties": {
+            "type": "object"
+          },
+          "x-nullable": true
+        },
+        "service_portfolio": {
+          "$ref": "#/definitions/service_portfolio"
+        },
+        "status": {
+          "description": "Status for the Tenant",
+          "type": "string",
+          "title": "Tenant Status",
+          "enum": [
+            "ACTIVE",
+            "DELETED"
+          ],
+          "readOnly": true,
+          "example": "ACTIVE"
+        }
+      }
+    },
+    "tenant_partial": {
+      "description": "The attributes of a Tenant that are able to modified.",
+      "type": "object",
+      "title": "Update Tenant",
+      "properties": {
+        "description": {
+          "description": "Description for the Tenant",
+          "type": "string",
+          "title": "Tenant Description",
+          "example": "Tenant Description"
+        },
+        "preferences": {
+          "description": "Preferences associated with the tenant",
+          "type": "object",
+          "title": "Preferences",
+          "additionalProperties": {
+            "type": "object"
+          },
+          "x-nullable": true
+        }
+      }
+    },
+    "tenant_view": {
+      "description": "The responsible party for the associated resources.",
+      "type": "object",
+      "title": "Tenant View",
+      "properties": {
+        "audit": {
+          "$ref": "#/definitions/audit"
+        },
+        "csp": {
+          "description": "Is Cloud Service Provider",
+          "type": "boolean",
+          "title": "Cloud Service Provider",
+          "default": false,
+          "readOnly": true
+        },
+        "description": {
+          "description": "Description for the Tenant",
+          "type": "string",
+          "title": "Tenant Description",
+          "example": "Tenant Description"
+        },
+        "funded": {
+          "description": "Indicates if the Tenant currently has funds or not",
+          "type": "boolean",
+          "title": "Tenant Funded",
+          "default": false,
+          "readOnly": true
+        },
+        "id": {
+          "description": "Unique identifier for the Tenant",
+          "type": "string",
+          "format": "uuid",
+          "title": "Tenant Identifier",
+          "readOnly": true,
+          "example": "3377f6e7-dd55-4639-bc54-65646fde2adc"
+        },
+        "labels": {
+          "description": "Label added for Tenant based on policies",
+          "type": "array",
+          "title": "Tenant Labels",
+          "items": {
+            "type": "string"
+          },
+          "readOnly": true,
+          "example": [
+            "IT"
+          ]
+        },
+        "name": {
+          "description": "Name for the Tenant",
+          "type": "string",
+          "title": "Tenant Name",
+          "minLength": 3,
+          "example": "Example Tenant"
+        },
+        "preferences": {
+          "description": "Preferences associated with the tenant",
+          "type": "object",
+          "title": "Preferences",
+          "additionalProperties": {
+            "type": "object"
+          },
+          "readOnly": true
+        },
+        "service_portfolio": {
+          "$ref": "#/definitions/service_portfolio"
+        },
+        "status": {
+          "description": "Status for the Tenant",
+          "type": "string",
+          "title": "Tenant Status",
+          "enum": [
+            "ACTIVE",
+            "DELETED"
+          ],
+          "example": "ACTIVE"
+        }
+      }
+    },
+    "tenant_view_minimal": {
+      "description": "The responsible party for the associated tenants.",
+      "type": "object",
+      "title": "Minimal Tenant View",
+      "properties": {
+        "admins": {
+          "description": "List of admins",
+          "type": "array",
+          "title": "Admins",
+          "items": {
+            "type": "string"
+          },
+          "readOnly": true,
+          "example": [
+            "mcmp-admin1",
+            "mcmp-admin2"
+          ]
+        },
+        "created_by": {
+          "description": "Identity that created the tenant",
+          "type": "string",
+          "title": "Created By",
+          "x-omitempty": true,
+          "readOnly": true,
+          "example": "user-cec"
+        },
+        "description": {
+          "description": "Description for a tenant",
+          "type": "string",
+          "title": "Description",
+          "x-omitempty": true,
+          "readOnly": true
+        },
+        "id": {
+          "description": "Unique identifier for the Tenant",
+          "type": "string",
+          "format": "uuid",
+          "title": "Tenant Identifier",
+          "readOnly": true,
+          "example": "3377f6e7-dd55-4639-bc54-65646fde2adc"
+        },
+        "name": {
+          "description": "Name for the Tenant",
+          "type": "string",
+          "title": "Tenant Name",
+          "minLength": 3,
+          "readOnly": true,
+          "example": "Example Tenant"
+        }
+      }
+    },
+    "user_attribution": {
+      "description": "User Attribution for Non-IT Tenants",
+      "type": "object",
+      "title": "User Attribution",
+      "properties": {
+        "business_application_name": {
+          "description": "Business Application Name",
+          "type": "string",
+          "title": "Business Application Name",
+          "x-nullable": true
+        },
+        "business_contact": {
+          "description": "Business contact for this Service Group",
+          "type": "string",
+          "format": "email",
+          "title": "Business Contact",
+          "x-nullable": true
+        },
+        "data_classification": {
+          "description": "Technical contact for this Service Group",
+          "type": "string",
+          "title": "Data Classification",
+          "enum": [
+            "CONFIDENTIAL",
+            "HIGHLYCONFIDENTIAL",
+            "PUBLIC",
+            "RESTRICTED"
+          ],
+          "x-nullable": true
+        },
+        "technical_contact": {
+          "description": "Technical contact for this Service Group",
+          "type": "string",
+          "format": "email",
+          "title": "Technical Contact",
+          "x-nullable": true
+        }
+      }
+    }
+  },
+  "responses": {
+    "400": {
+      "description": "Invalid Request Error. Check error message in the response body for details.\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-001",
+          "message": "Missing required attribute 'name'."
+        }
+      }
+    },
+    "401": {
+      "description": "Authentication Failure\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-002",
+          "message": "Authentication failed bad password."
+        }
+      }
+    },
+    "402": {
+      "description": "Insufficient Funds\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-003",
+          "message": "Insufficient Funds to cover the cost of resource."
+        }
+      }
+    },
+    "403": {
+      "description": "Authorization Failure\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-004",
+          "message": "Not authorized to perform action."
+        }
+      }
+    },
+    "404": {
+      "description": "Resource not found\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-005",
+          "message": "Resource \u003cid\u003e does not exist."
+        }
+      }
+    },
+    "409": {
+      "description": "Conflict\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-006",
+          "message": "Resource already exists."
+        }
+      }
+    },
+    "422": {
+      "description": "Unprocessable Entity Failure\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-007",
+          "message": "Resource is not able to be updated."
+        }
+      }
+    },
+    "500": {
+      "description": "Internal Server Error. Check error entity in the response body for details.\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-009",
+          "message": "Internal server error."
+        }
+      }
+    },
+    "503": {
+      "description": "Service Unavailable\n",
+      "schema": {
+        "$ref": "#/definitions/error"
+      },
+      "headers": {
+        "X-Request-Id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifer associated with request"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "code": "EXAMPLE-010",
+          "message": "Service Unavailable."
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "token": {
+      "type": "oauth2",
+      "flow": "password",
+      "tokenUrl": "https://cloudsso-test.cisco.com/as/token.oauth2",
+      "scopes": {
+        "funds:admin": "Funds Admin",
+        "servicegroup:admin": "Service Group Admin",
+        "servicegroup:operator": "Service Group Operator",
+        "servicegroup:view": "Service Group View",
+        "tenant:admin": "Tenant Administrator",
+        "tenant:operator": "Tenant Operator",
+        "tenant:view": "Tenant View"
+      }
+    }
+  },
+  "security": [
+    {
+      "token": []
+    }
+  ],
+  "tags": [
+    {
+      "description": "Tenant Operations",
+      "name": "tenant"
+    },
+    {
+      "description": "Servicegroup Operations",
+      "name": "servicegroup"
+    },
+    {
+      "description": "Account Operations",
+      "name": "account"
+    },
+    {
+      "name": "resource"
+    },
+    {
+      "name": "portfolio"
+    }
+  ],
+  "x-groupby": "Platform APIs",
+  "x-mcmp-component-type": "core",
+  "x-navigateMethodsByName": true,
+  "x-sortMethodsBy": [
+    "operation",
+    "path"
+  ]
+}

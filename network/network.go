@@ -28,13 +28,14 @@ import (
 	"github.com/kenjones-cisco/dapperdox/config"
 )
 
-// NewListener creates a new network Listener
+// NewListener creates a new network Listener.
 func NewListener() (net.Listener, error) {
 	log().Infof("listening on %s for unsecured connections", viper.GetString(config.BindAddr))
+
 	return newListener()
 }
 
-// NewSecuredListener creates a secure network Listener
+// NewSecuredListener creates a secure network Listener.
 func NewSecuredListener() (net.Listener, error) {
 	crt, err := tls.LoadX509KeyPair(viper.GetString(config.TLSCert), viper.GetString(config.TLSKey))
 	if err != nil {
@@ -69,7 +70,9 @@ func NewSecuredListener() (net.Listener, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	log().Infof("listening on %s for SECURED connections", viper.GetString(config.BindAddr))
+
 	return tls.NewListener(l, tlscfg), nil
 }
 

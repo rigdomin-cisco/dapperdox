@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -55,19 +56,22 @@ func main() {
 
 	chain := handlers.NewRouterChain()
 
-	var listener net.Listener
-	var err error
+	var (
+		listener net.Listener
+		err      error
+	)
 
 	if viper.GetString(config.TLSCert) != "" && viper.GetString(config.TLSKey) != "" {
 		listener, err = network.NewSecuredListener()
 	} else {
 		listener, err = network.NewListener()
 	}
+
 	if err != nil {
 		log.Logger().Fatalf("Error listening on %s: %s", viper.GetString(config.BindAddr), err)
 	}
 
-	if err = http.Serve(listener, chain); err != nil && err != http.ErrServerClosed {
+	if err = http.Serve(listener, chain); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Logger().Fatalf("%v", err)
 	}
 }

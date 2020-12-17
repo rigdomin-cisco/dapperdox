@@ -31,7 +31,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ian-kent/htmlform"
 	"github.com/spf13/viper"
 	"github.com/unrolled/render"
 
@@ -41,24 +40,25 @@ import (
 )
 
 var (
-	// global instance of github.com/unrolled/render.Render
+	// global instance of github.com/unrolled/render.Render.
 	_render *render.Render
 
 	counter int
 )
 
-// Register is alias for initializing new render.Render
+// Register is alias for initializing new render.Render.
 func Register() {
 	log().Debug("initializing Render")
+
 	_render = new()
 }
 
-// HTML is an alias to github.com/unrolled/render.Render.HTML
+// HTML is an alias to github.com/unrolled/render.Render.HTML.
 func HTML(w io.Writer, status int, name string, binding interface{}, htmlOpt ...render.HTMLOptions) {
 	_ = _render.HTML(w, status, name, binding, htmlOpt...)
 }
 
-// TemplateLookup is an alias to github.com/unrolled/render.TemplateLookup
+// TemplateLookup is an alias to github.com/unrolled/render.TemplateLookup.
 func TemplateLookup(t string) *template.Template {
 	return _render.TemplateLookup(t)
 }
@@ -82,6 +82,7 @@ func new() *render.Render {
 		if viper.GetString(config.ThemeDir) != "" {
 			dir = viper.GetString(config.ThemeDir)
 		}
+
 		asset.Compile(filepath.Join(dir, viper.GetString(config.Theme)), "assets")
 	}
 
@@ -89,6 +90,7 @@ func new() *render.Render {
 		// The default theme underpins all others
 		asset.Compile(filepath.Join(viper.GetString(config.DefaultAssetsDir), "themes", "default"), "assets")
 	}
+
 	compileSections(viper.GetString(config.DefaultAssetsDir))
 
 	// Fallback to local templates directory
@@ -103,10 +105,10 @@ func new() *render.Render {
 		Delims:     render.Delims{Left: "[:", Right: ":]"},
 		Layout:     "layout",
 		Funcs: []template.FuncMap{{
-			"map":           htmlform.Map,
-			"ext":           htmlform.Extend,
-			"fnn":           htmlform.FirstNotNil,
-			"arr":           htmlform.Arr,
+			"map":           Map,
+			"ext":           Extend,
+			"fnn":           FirstNotNil,
+			"arr":           Arr,
 			"lc":            strings.ToLower,
 			"uc":            strings.ToUpper,
 			"join":          strings.Join,
@@ -137,27 +139,28 @@ func compileSectionPart(id, assetsDir, part, prefix string) {
 	asset.Compile(filepath.Join(assetsDir, "sections", stem), filepath.Join(prefix, stem))
 }
 
-// htmlWriter implements an HTML Writer interface
+// htmlWriter implements an HTML Writer interface.
 type htmlWriter struct {
 	h *bufio.Writer
 }
 
-// Header provides empty implementation
+// Header provides empty implementation.
 func (w htmlWriter) Header() http.Header { return http.Header{} }
 
-// WriteHeader provides empty implementation
+// WriteHeader provides empty implementation.
 func (w htmlWriter) WriteHeader(int) {}
 
-// Write provides empty implementation
+// Write provides empty implementation.
 func (w htmlWriter) Write(data []byte) (int, error) { return w.h.Write(data) }
 
-// Flush provides empty implementation
+// Flush provides empty implementation.
 func (w htmlWriter) Flush() { _ = w.h.Flush() }
 
 // XXX WHY ARRAY of DATA?
 func overlayFunc(name string, data []interface{}) template.HTML { // TODO Will be specification specific
 	if len(data) == 0 || data[0] == nil {
 		log().Debug("Data nil")
+
 		return ""
 	}
 
@@ -166,20 +169,25 @@ func overlayFunc(name string, data []interface{}) template.HTML { // TODO Will b
 	datamap, ok := data[0].(map[string]interface{})
 	if !ok {
 		log().Trace("Overlay: type convert of data[0] to map[string]interface{} failed. Not an expected type.")
+
 		return ""
 	}
 
 	var b bytes.Buffer
+
 	// Look for an overlay file in declaration order.... Highest priority is first.
 	for _, op := range overlayPaths(name, datamap) {
 		log().Tracef("Overlay: Does %q exist?", op)
+
 		if TemplateLookup(op) != nil {
 			log().Tracef("Applying overlay %q", op)
+
 			writer := htmlWriter{h: bufio.NewWriter(&b)}
 
 			// data is a single item array (though I've not figured out why yet!)
 			_ = new().HTML(writer, http.StatusOK, op, data[0], render.HTMLOptions{Layout: ""})
 			writer.Flush()
+
 			break
 		}
 	}
@@ -200,16 +208,20 @@ func overlayPaths(name string, datamap map[string]interface{}) []string {
 		if _, ok := datamap["Methods"].([]spec.Method); ok {
 			getAPIAssetPaths(name, &overlayName, datamap)
 		}
+
 		if _, ok := datamap["Method"].(spec.Method); ok {
 			getMethodAssetPaths(name, &overlayName, datamap)
 		}
 	}
+
 	if _, ok := datamap["Resource"].(*spec.Resource); ok {
 		getResourceAssetPaths(name, &overlayName, datamap)
 	}
+
 	if _, ok := datamap["SpecificationList"]; ok {
 		getSpecificationListPaths(name, &overlayName, datamap)
 	}
+
 	if _, ok := datamap["SpecificationSummary"]; ok {
 		getSpecificationSummaryPaths(name, &overlayName, datamap)
 	}
@@ -226,23 +238,32 @@ func getAssetPaths(_ string, data []interface{}) []string {
 		if _, ok := datamap["Methods"]; ok {
 			// API-group summary page - Shows operations in a group
 			getAPIAssetPaths("", &paths, datamap)
+
 			return paths
 		}
 	}
+
 	if _, ok := datamap["Method"]; ok {
 		getMethodAssetPaths("", &paths, datamap) // Method page
+
 		return paths
 	}
+
 	if _, ok := datamap["Resource"]; ok {
 		getResourceAssetPaths("", &paths, datamap) // Resource page
+
 		return paths
 	}
+
 	if _, ok := datamap["SpecificationList"]; ok {
 		getSpecificationListPaths("", &paths, datamap) // Specification List page
+
 		return paths
 	}
+
 	if _, ok := datamap["SpecificationSummary"]; ok {
 		getSpecificationSummaryPaths("", &paths, datamap) // Specification List page
+
 		return paths
 	}
 
@@ -264,6 +285,7 @@ func getOverlayStems(overlayAsset string) *overlayStems {
 			asset: "/" + overlayAsset + "/overlay",
 		}
 	}
+
 	return &overlayStems{
 		specStem:   "assets/sections/",
 		globalStem: "assets/templates/",
@@ -331,23 +353,27 @@ func getSpecificationListPaths(overlayAsset string, paths *[]string, _ map[strin
 
 func getSpecificationSummaryPaths(overlayAsset string, paths *[]string, datamap map[string]interface{}) {
 	a := getOverlayStems(overlayAsset)
+
 	if specID, ok := datamap["ID"].(string); ok {
 		*paths = append(*paths, a.specStem+specID+"/templates/reference/specification_summary"+a.asset)
 	}
+
 	*paths = append(*paths, a.globalStem+"reference/specification_summary"+a.asset)
 }
 
-// toInt64 converts integer types to 64-bit integers
+// toInt64 converts integer types to 64-bit integers.
 func toInt64(v interface{}) int64 {
 	if str, ok := v.(string); ok {
 		iv, err := strconv.ParseInt(str, 10, 64)
 		if err != nil {
 			return 0
 		}
+
 		return iv
 	}
 
 	val := reflect.Indirect(reflect.ValueOf(v))
+
 	switch val.Kind() {
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 		return val.Int()
@@ -358,6 +384,7 @@ func toInt64(v interface{}) int64 {
 		if tv <= math.MaxInt64 {
 			return int64(tv)
 		}
+
 		// TODO: What is the sensible thing to do here?
 		return math.MaxInt64
 	case reflect.Float32, reflect.Float64:
@@ -366,6 +393,7 @@ func toInt64(v interface{}) int64 {
 		if val.Bool() {
 			return 1
 		}
+
 		return 0
 	default:
 		return 0
