@@ -1069,7 +1069,8 @@ func (c *APISpecification) resourceFromSchema(s *spec.Schema, method *Method, fq
 // It uses the 'required' map to set when properties are required and builds a JSON
 // representation of the resource.
 func (c *APISpecification) compileproperties(s *spec.Schema, r *Resource, method *Method, id string, required map[string]bool, jsonRep map[string]interface{}, myFQNS []string,
-	chopped, isRequestResource bool) {
+	chopped, isRequestResource bool,
+) {
 	// First, grab the required members
 	for _, n := range s.Required {
 		required[n] = true
@@ -1097,7 +1098,8 @@ func (c *APISpecification) compileproperties(s *spec.Schema, r *Resource, method
 }
 
 func (c *APISpecification) processProperty(s *spec.Schema, name string, r *Resource, method *Method, id string, required map[string]bool, jsonRep map[string]interface{}, myFQNS []string,
-	chopped, isRequestResource bool) {
+	chopped, isRequestResource bool,
+) {
 	newFQNS := prepareNamespace(myFQNS, id, name, chopped)
 
 	var (

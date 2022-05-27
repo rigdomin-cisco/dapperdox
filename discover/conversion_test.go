@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/api/apps/v1beta1"
+	appv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -140,7 +140,7 @@ func Test_convertDeployment(t *testing.T) {
 	ttime := metav1.NewTime(time.Now())
 
 	type args struct {
-		dpl *v1beta1.Deployment
+		dpl *appv1.Deployment
 	}
 
 	tests := []struct {
@@ -151,14 +151,14 @@ func Test_convertDeployment(t *testing.T) {
 		{
 			name: "success - populated k8s Deployment converts to Deployment",
 			args: args{
-				dpl: &v1beta1.Deployment{},
+				dpl: &appv1.Deployment{},
 			},
 			want: &models.Deployment{},
 		},
 		{
 			name: "success - empty k8s Deployment converts to empty Deployment",
 			args: args{
-				dpl: &v1beta1.Deployment{
+				dpl: &appv1.Deployment{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:              "abc-svc",
 						Namespace:         "mcmp-rtp",

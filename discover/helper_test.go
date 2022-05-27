@@ -2,7 +2,6 @@ package discover
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -25,26 +24,26 @@ const (
 
 func copyFile(src, dst string) {
 	// Read all content of src to data
-	data, _ := ioutil.ReadFile(src)
+	data, _ := os.ReadFile(src)
 	// Write data to dst
-	_ = ioutil.WriteFile(dst, data, 0644)
+	_ = os.WriteFile(dst, data, 0o644)
 }
 
 func copyKubeToken() {
-	_ = os.MkdirAll("/var/run/secrets/kubernetes.io/serviceaccount", 0755)
+	_ = os.MkdirAll("/var/run/secrets/kubernetes.io/serviceaccount", 0o755)
 
 	copyFile("testdata/token", "/var/run/secrets/kubernetes.io/serviceaccount/token")
 }
 
 func copyKubeCert() {
-	_ = os.MkdirAll("/var/run/secrets/kubernetes.io/serviceaccount", 0755)
+	_ = os.MkdirAll("/var/run/secrets/kubernetes.io/serviceaccount", 0o755)
 
 	copyFile("testdata/ca.crt", "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
 }
 
 func genServerAPI(path string) *httptest.Server {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		spec, err := ioutil.ReadFile(path)
+		spec, err := os.ReadFile(path)
 		if err != nil {
 			w.WriteHeader(http.StatusServiceUnavailable)
 		} else {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/api/apps/v1beta1"
+	appv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 
 	"github.com/kenjones-cisco/dapperdox/discover/models"
@@ -48,7 +48,7 @@ func convertService(svc *v1.Service, domainSuffix string) *models.Service {
 	}
 }
 
-func convertDeployment(dpl *v1beta1.Deployment) *models.Deployment {
+func convertDeployment(dpl *appv1.Deployment) *models.Deployment {
 	return &models.Deployment{
 		Name:              dpl.Name,
 		Namespace:         dpl.Namespace,

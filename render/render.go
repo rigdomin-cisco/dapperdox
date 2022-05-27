@@ -39,6 +39,11 @@ import (
 	"github.com/kenjones-cisco/dapperdox/spec"
 )
 
+const (
+	sizeTen       = 10
+	sizeSixtyFour = 64
+)
+
 var (
 	// global instance of github.com/unrolled/render.Render.
 	_render *render.Render
@@ -364,7 +369,7 @@ func getSpecificationSummaryPaths(overlayAsset string, paths *[]string, datamap 
 // toInt64 converts integer types to 64-bit integers.
 func toInt64(v interface{}) int64 {
 	if str, ok := v.(string); ok {
-		iv, err := strconv.ParseInt(str, 10, 64)
+		iv, err := strconv.ParseInt(str, sizeTen, sizeSixtyFour)
 		if err != nil {
 			return 0
 		}

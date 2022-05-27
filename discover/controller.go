@@ -5,7 +5,7 @@ import (
 	"time"
 
 	wraperrors "github.com/pkg/errors"
-	"k8s.io/api/apps/v1beta1"
+	appv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -95,7 +95,7 @@ func newCatalog(client kubernetes.Interface, options catalogOptions) watcher {
 			return client.CoreV1().Services(options.WatchedNamespace).Watch(opts)
 		})
 
-	out.deployments = out.createInformer(&v1beta1.Deployment{}, options.ResyncPeriod,
+	out.deployments = out.createInformer(&appv1.Deployment{}, options.ResyncPeriod,
 		func(opts meta_v1.ListOptions) (runtime.Object, error) {
 			return client.AppsV1beta1().Deployments(options.WatchedNamespace).List(opts)
 		},
@@ -131,7 +131,7 @@ func (c *catalog) AppendServiceHandler(f func(*models.Service, models.Event)) {
 // AppendDeploymentHandler notifies about change to the deployment catalog.
 func (c *catalog) AppendDeploymentHandler(f func(*models.Deployment, models.Event)) {
 	c.deployments.handler.Append(func(obj interface{}, event models.Event) error {
-		dpl, _ := obj.(*v1beta1.Deployment)
+		dpl, _ := obj.(*appv1.Deployment)
 
 		// Do not handle "kube-system" services
 		if dpl.Namespace == meta_v1.NamespaceSystem {

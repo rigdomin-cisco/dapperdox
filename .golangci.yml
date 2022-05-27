@@ -388,6 +388,11 @@ issues:
       linters:
         - forbidigo
 
+    - path: discover/apispecs_test.go
+      text: "Possible resource leak"
+      linters:
+        - gocritic
+
     # TODO(rigdomin): handler this linter at a later time
     - path: formatter/markdown.go|handlers/reference/reference.go
       text: "reassigned, but never used afterwards"

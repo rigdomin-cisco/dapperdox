@@ -20,7 +20,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package specs
 
 import (
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -128,7 +127,7 @@ func loadSpecsByDir() map[string][]byte {
 			log().Debugf("    = URL : %s", route)
 			log().Tracef("    + File: %s", path)
 
-			specMap[route], _ = ioutil.ReadFile(path)
+			specMap[route], _ = os.ReadFile(path)
 		}
 
 		return nil
